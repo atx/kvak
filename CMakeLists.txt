@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.0)
+cmake_minimum_required (VERSION 3.6)
 project (kvak)
 
 set (CMAKE_CXX_STANDARD 17)
@@ -33,9 +33,7 @@ if (WITH_OPENMP)
 endif ()
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb")
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wduplicated-cond \
--Wduplicated-branches -Wlogical-op -Wrestrict -Wnull-dereference \
--Wold-style-cast -Wuseless-cast -Wdouble-promotion -Wformat=2 -Wno-unused")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter")
 
 
 set (INTERPOL_TAPS_FILE_PATH "${CMAKE_CURRENT_BINARY_DIR}/interpol_taps.hpp")
