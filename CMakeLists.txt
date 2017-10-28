@@ -37,4 +37,19 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wduplicated-cond \
 -Wduplicated-branches -Wlogical-op -Wrestrict -Wnull-dereference \
 -Wold-style-cast -Wuseless-cast -Wdouble-promotion -Wformat=2 -Wno-unused")
 
-add_executable (kvak main.cpp)
+
+set (INTERPOL_TAPS_FILE_PATH "${CMAKE_CURRENT_BINARY_DIR}/interpol_taps.hpp")
+add_custom_command(
+	OUTPUT interpol_taps.hpp
+	COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/interpol.py -n 8 -s 128 -f c++ -o "${INTERPOL_TAPS_FILE_PATH}"
+	WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+	COMMENT "Generating interpolation filter taps"
+)
+
+add_executable (kvak main.cpp ${INTERPOL_TAPS_FILE_PATH})
+target_include_directories (kvak PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
+	${CMAKE_CURRENT_SOURCE_DIR})
+
+add_executable (resample resample.cpp interpolator.cpp ${INTERPOL_TAPS_FILE_PATH})
+target_include_directories (resample PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
+	${CMAKE_CURRENT_SOURCE_DIR})
