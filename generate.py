@@ -42,6 +42,21 @@ if __name__ == "__main__":
         "-u", "--unpack",
         action="store_true",
     )
+    parser.add_argument(
+        "--noise-stddev",
+        type=float,
+        default=0.0,
+    )
+    parser.add_argument(
+        "--frequency-offset",
+        type=float,
+        default=0.0,
+    )
+    parser.add_argument(
+        "--frequency-jitter",
+        type=float,
+        default=0.0,
+    )
     args = parser.parse_args()
 
     complex_struct = struct.Struct("ff")
@@ -54,7 +69,8 @@ if __name__ == "__main__":
         for _ in range(args.nsymbols):
             # This could be massively sped up with numpy
             symbol = next(pattern)
-            phase_inc = SYMBOL_TO_PHASE[symbol]
+            phase_inc = SYMBOL_TO_PHASE[symbol] + \
+                args.frequency_offset + random.gauss(0.0, args.frequency_jitter)
             if args.unpack:
                 fdata.write(bytes([symbol >> 1, symbol & 0b1]))
             else:
@@ -62,5 +78,7 @@ if __name__ == "__main__":
             for _ in range(2):
                 phase = (phase + phase_inc/2) % (2 * math.pi)
                 i, q = math.cos(phase), math.sin(phase)
+                i += random.gauss(0.0, args.noise_stddev)
+                q += random.gauss(0.0, args.noise_stddev)
                 bs = complex_struct.pack(i, q)
                 fout.write(bs)
