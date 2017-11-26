@@ -57,6 +57,10 @@ if __name__ == "__main__":
         type=float,
         default=0.0,
     )
+    parser.add_argument(
+        "-v", "--verbose",
+        action="store_true",
+    )
     args = parser.parse_args()
 
     complex_struct = struct.Struct("ff")
@@ -75,10 +79,12 @@ if __name__ == "__main__":
                 fdata.write(bytes([symbol >> 1, symbol & 0b1]))
             else:
                 fdata.write(bytes([symbol]))
-            for _ in range(2):
+            for n in range(2):
                 phase = (phase + phase_inc/2) % (2 * math.pi)
                 i, q = math.cos(phase), math.sin(phase)
                 i += random.gauss(0.0, args.noise_stddev)
                 q += random.gauss(0.0, args.noise_stddev)
                 bs = complex_struct.pack(i, q)
                 fout.write(bs)
+                if args.verbose:
+                    print("!" if n else " ", "{: .4f}\t{: .4f} {: .4f}".format(phase, i, q))
