@@ -82,13 +82,14 @@ static float calculate_phase_error(std::complex<float> sample)
 
 void demodulator::phase_recovery()
 {
-
 	float err = calculate_phase_error(this->sample_now);
 
-	float freq_weight = 0.0001;
+	// Magical constants taken from
+	// https://github.com/gnuradio/gnuradio/blob/master/gr-blocks/lib/control_loop.cc
+	float freq_weight = 0.00377634;
 	this->frequency_offset += err * freq_weight;
 
-	float phase_weight = 0.01;
+	float phase_weight = 0.0849974;
 	this->phase_offset += err * phase_weight;
 }
 
