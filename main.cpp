@@ -6,6 +6,7 @@
 #include <iostream>
 
 #include "demodulator.hpp"
+#include "utils.hpp"
 
 namespace filesystem = std::experimental::filesystem;
 
@@ -24,15 +25,21 @@ struct arguments {
 		input_path(""),
 		output_path(""),
 		fifo_mode(false),
-		chunk_size(1024)
+		chunk_size(1024),
+		unpack(true)
 	{
 	}
+
+	enum arg_ids {
+		DONT_UNPACK = 1000
+	};
 
 	unsigned int nchannels;
 	filesystem::path input_path;
 	filesystem::path output_path;
 	bool fifo_mode;
 	std::size_t chunk_size;
+	bool unpack;
 };
 
 
@@ -44,6 +51,8 @@ static struct argp_option argp_options[] = {
 	{ "fifo",		'f',	nullptr,		0,
 		"Explicitly create output FIFOs instead of files",					0 },
 	{ "chunk-size", 'c',	"CHUNK",		0,		"Chunk size",			0 },
+	{ "dont-unpack", arguments::arg_ids::DONT_UNPACK,
+		nullptr,		0,		"Don't unpack the output symbols", 0 },
 	{ nullptr,		0,		nullptr,		0,		nullptr,				0 },
 };
 
@@ -73,6 +82,9 @@ static error_t parse_opt(int key, char *arg_, struct argp_state *state)
 		if (args->chunk_size == 0) {
 			FAIL("Invalid chunk size specified (0)");
 		}
+		break;
+	case arguments::arg_ids::DONT_UNPACK:
+		args->unpack = false;
 		break;
 	case ARGP_KEY_END:
 		if (!args->input_path.has_filename()) {
@@ -156,7 +168,14 @@ int main(int argc, char *argv[])
 			std::optional<std::uint8_t> ret = demods[n].push_sample(*iter++);
 			if (ret) {
 				std::uint8_t val = ret.value();
-				std::fwrite(&val, sizeof(val), 1, output_files[n]);
+				if (args.unpack) {
+					uint8_t data[2] = {
+						kvak::utils::bit(val, 1), kvak::utils::bit(val, 0)
+					};
+					std::fwrite(data, sizeof(data), 1, output_files[n]);
+				} else {
+					std::fwrite(&val, sizeof(val), 1, output_files[n]);
+				}
 			}
 		}
 	}

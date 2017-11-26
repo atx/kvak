@@ -25,4 +25,10 @@ T modular_inc(T a, T b, T c=1)
 	return (a + c) % b;
 }
 
+template<typename T>
+T bit(T a, unsigned int n)
+{
+	return (a >> n) & 0x1;
+}
+
 }
