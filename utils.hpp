@@ -1,6 +1,8 @@
 
 #pragma once
 
+#include <complex>
+
 namespace kvak::utils {
 
 template <typename T>

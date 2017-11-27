@@ -15,15 +15,11 @@ namespace kvak {
 
 demodulator::demodulator()
 	:
-	timing_delta(3.0),
-	phase_rotator(0.0),
 	delay_line(interp::num_taps * 2, 0.0),
 	delay_line_i(0),
 	sample_prev_prev(0.0),
 	sample_prev(0.0),
 	sample_now(0.0),
-	phase_offset(0.0),
-	frequency_offset(-M_PI / 8),
 	samples_per_symbol(2.0),
 	at_midpoint(false)
 {
@@ -48,12 +44,7 @@ void demodulator::resample()
 	std::complex<float> *dline = &this->delay_line.data()[this->delay_line_i];
 	std::complex<float> raw = interp::interpolate(dline, this->timing_delta);
 
-	this->phase_offset += this->frequency_offset;
-	this->phase_offset = kvak::utils::modular_clamp<float>(
-		this->phase_offset, -M_PI*2, M_PI*2, M_PI*2
-	);
-
-	this->sample_now = raw * utils::expj(this->phase_offset);
+	this->sample_now = this->costas.advance(raw);
 }
 
 
@@ -66,30 +57,6 @@ void demodulator::timing_recovery()
 	float err_q = error_c.real() * (this->sample_prev*rot).real();
 	float err = err_i + err_q;
 	this->samples_per_symbol -= err * 0.001;
-}
-
-
-static float calculate_phase_error(std::complex<float> sample)
-{
-	// https://github.com/gnuradio/gnuradio/blob/master/gr-digital/lib/costas_loop_cc_impl.cc#L122
-	float err =
-		((sample.real() > 0.0 ? 1.0 : -1.0) * sample.imag() -
-		 (sample.imag() > 0.0 ? 1.0 : -1.0) * sample.real());
-	return err;
-}
-
-
-void demodulator::phase_recovery()
-{
-	float err = calculate_phase_error(this->sample_now);
-
-	// Magical constants taken from
-	// https://github.com/gnuradio/gnuradio/blob/master/gr-blocks/lib/control_loop.cc
-	float freq_weight = 0.00377634;
-	this->frequency_offset += err * freq_weight;
-
-	float phase_weight = 0.0849974;
-	this->phase_offset += err * phase_weight;
 }
 
 
@@ -130,7 +97,7 @@ std::optional<std::uint8_t> demodulator::push_sample(std::complex<float> sample)
 	if (this->timing_delta < 0) {
 		this->timing_delta = 0;
 	}
-	this->phase_recovery();
+	this->costas.push_sample(this->sample_now);
 
 	std::uint8_t ret = this->calculate_output();
 	return ret;

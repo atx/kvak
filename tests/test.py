@@ -17,8 +17,8 @@ if __name__ == "__main__":
     cases = [
         TestCase(
             "data.1.cf32",
-            2721,
-            10302,
+            2704,
+            10340,
         )
     ]
 

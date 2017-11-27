@@ -10,6 +10,8 @@
 #include <memory>
 #include <vector>
 
+#include "costas.hpp"
+
 namespace kvak {
 
 
@@ -24,13 +26,11 @@ private:
 	void shift_delay_line(std::complex<float> sample);
 	void resample();
 	void timing_recovery();
-	void phase_recovery();
 	std::uint8_t calculate_output();
 
 	// How many samples are we forward by at the moment
+	kvak::costas costas;
 	float timing_delta;
-	// Phase rotator state
-	float phase_rotator;
 	// Stores the recent input samples, twice to allow easy pointer-ing
 	// (trick from gnuradio)
 	std::vector<std::complex<float>> delay_line;
@@ -40,10 +40,6 @@ private:
 	std::complex<float> sample_prev_prev;
 	std::complex<float> sample_prev;
 	std::complex<float> sample_now;
-
-	// Frequency and phase offsets
-	float phase_offset;
-	float frequency_offset;
 
 	float samples_per_symbol;
 

@@ -45,7 +45,7 @@ add_custom_command(
 	COMMENT "Generating interpolation filter taps"
 )
 
-add_executable (kvak main.cpp demodulator.cpp interpolator.cpp ${INTERPOL_TAPS_FILE_PATH})
+add_executable (kvak main.cpp costas.cpp demodulator.cpp interpolator.cpp ${INTERPOL_TAPS_FILE_PATH})
 target_link_libraries (kvak stdc++fs)
 target_include_directories (kvak PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR})
