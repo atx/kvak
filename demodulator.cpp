@@ -96,25 +96,16 @@ void demodulator::phase_recovery()
 std::uint8_t demodulator::calculate_output()
 {
 
-	float phase_difference =
-		std::arg(this->sample_now * std::conj(this->sample_prev_prev));
-	phase_difference /= M_PI / 2;
-	int symbol_idx = round(phase_difference);
-
-	switch(symbol_idx) {
-	case  0:  // No rotation
-		return 0;
-	case 1:
-		return 1;
-	case -1:
-		return 2;
-	case -2:  // Rotation by (+-) PI
-	case  2:
-		return 3;
+	std::complex<float> cdiff = this->sample_now * std::conj(this->sample_prev_prev);
+	if (fabs(cdiff.real()) > fabs(cdiff.imag())) {  // Horizontal axis is the major axis
+		if (cdiff.real() > 0.0) {
+			return 0;  // No rotation
+		}
+		return 3; // +- pi rotation
+	} else if (cdiff.imag() > 0.0 ) {
+		return 1;  // +pi rotation
 	}
-
-	// We should never get here
-	return 0;
+	return 2;  // -pi rotation
 }
 
 
