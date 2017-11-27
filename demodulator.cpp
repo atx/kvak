@@ -66,7 +66,7 @@ void demodulator::timing_recovery()
 	float err_i = error_c.imag() * (this->sample_prev*rot).imag();
 	float err_q = error_c.real() * (this->sample_prev*rot).real();
 	float err = err_i + err_q;
-	this->samples_per_symbol += err * 0.01;
+	this->samples_per_symbol -= err * 0.001;
 }
 
 
