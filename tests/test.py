@@ -23,7 +23,7 @@ if __name__ == "__main__":
     ]
 
     # TODO: Make this smarter
-    base_dir = pathlib.Path(__file__).parent
+    base_dir = pathlib.Path(__file__).absolute().parent
     kvak_bin = base_dir.parent / "build/kvak"
     if not kvak_bin.exists():
         print("Couldn't find the kvak binary in {}".format(kvak_bin))
