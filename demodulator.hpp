@@ -10,8 +10,6 @@
 #include <memory>
 #include <vector>
 
-#include "ring.hpp"
-
 namespace kvak {
 
 
