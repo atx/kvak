@@ -31,4 +31,10 @@ T bit(T a, unsigned int n)
 	return (a >> n) & 0x1;
 }
 
+template<typename T>
+std::complex<T> expj(T phase)
+{
+	return std::exp(std::complex<T>(0.0, phase));
+}
+
 }

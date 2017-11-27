@@ -53,14 +53,13 @@ void demodulator::resample()
 		this->phase_offset, -M_PI*2, M_PI*2, M_PI*2
 	);
 
-	std::complex<float> phase(0.0, this->phase_offset);
-	this->sample_now = raw * std::exp(phase);
+	this->sample_now = raw * utils::expj(this->phase_offset);
 }
 
 
 void demodulator::timing_recovery()
 {
-	std::complex<float> rot = std::exp(std::complex<float>(0.0, M_PI / 4));
+	std::complex<float> rot = utils::expj<float>(M_PI / 4.0);
 	std::complex<float> error_c =
 		(this->sample_prev_prev*rot - this->sample_now*rot);
 	float err_i = error_c.imag() * (this->sample_prev*rot).imag();
