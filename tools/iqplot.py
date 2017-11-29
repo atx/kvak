@@ -2,9 +2,9 @@
 
 import argparse
 import pathlib as path
+import pyqtgraph as pg
 import struct
-
-from matplotlib import pyplot
+import time
 
 
 if __name__ == "__main__":
@@ -19,25 +19,31 @@ if __name__ == "__main__":
         type=int,
         default=10000
     )
+    parser.add_argument(
+        "-s", "--sleep",
+        type=float,
+        default=0.001,
+    )
     args = parser.parse_args()
 
-    figure = pyplot.gcf()
-    figure.show()
-    figure.canvas.draw()
+    pw = pg.plot()
 
     counter = args.limit
     with args.input.open("rb") as fin:
+        border = 0.01
         while fin:
             data = fin.read(counter * 4)
             floats = struct.unpack("{}f".format(len(data) // 4), data)
-            counter -= len(floats)
             i, q = floats[::2], floats[1::2]
-            pyplot.plot(i, q, linestyle="", marker="o")
-            pyplot.xlim([-1.3, 1.3])
-            pyplot.ylim([-1.3, 1.3])
+            pw.plot(
+                i, q, clear=True, pen=None,
+                symbol="o", symbolBrush="FF0"
+            )
 
-            if counter <= 0:
-                print("Rendering")
-                counter = args.limit
-                figure.canvas.draw()
-                figure.clear()
+            border = max(max(i), max(i), abs(min(i)), abs(min(q)), border)
+            pw.setXRange(-border, border)
+            pw.setYRange(-border, border)
+
+            pg.QtGui.QApplication.processEvents()
+
+            time.sleep(args.sleep)
