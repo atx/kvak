@@ -27,7 +27,7 @@ def make_filter(offset, num_taps):
 
 def make_filter_bank(steps, num_taps):
     return [
-        make_filter(n / (steps - 1), num_taps)
+        make_filter(1 - n / (steps - 1), num_taps)
         for n in range(steps)
     ]
 

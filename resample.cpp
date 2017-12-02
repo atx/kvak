@@ -23,15 +23,11 @@ int main(int argc, char *argv[])
 	float phase_inc = 1 / std::stof(argv[1]);
 	float phase = 0.0;
 
+	std::vector<std::complex<float>> dline(interp::num_taps * 2, 0.0);
+	std::size_t dline_i = 0;
+
 	std::array<std::complex<float>, 1024 * 8> data;
 	std::fill(data.begin(), data.end(), 0.0);
-
-	// Prefill the FIR buffer
-	std::size_t len = std::fread(&data[0], sizeof(data[0]), interp::num_taps / 2, stdin);
-	if (len != interp::num_taps / 2) {
-		std::cerr << "Read from stdin failed!" << std::endl;
-		return EXIT_FAILURE;
-	}
 
 	while (true) {
 		std::size_t len = std::fread(
@@ -48,15 +44,20 @@ int main(int argc, char *argv[])
 		}
 
 		for (unsigned int i = 0; i < len; i++) {
+			dline[dline_i] = data[i];
+			dline[dline_i + interp::num_taps] = data[i];
+			dline_i = (dline_i + 1) % interp::num_taps;
+
 			while (phase <= 1.0) {
-				std::complex<float> out = interp::interpolate(&data[i], phase);
+				std::complex<float> out = interp::interpolate(&dline[dline_i], phase);
 				phase += phase_inc;
 				std::fwrite(&out, sizeof(out), 1, stdout);
 			}
+
 			phase -= 1.0;
 		}
-		std::memcpy(&data[0], &data[data.size() - interp::num_taps],
-					interp::num_taps * sizeof(data[0]));
+		std::memmove(&data[0], &data[data.size() - interp::num_taps],
+					 interp::num_taps * sizeof(data[0]));
 	}
 
 	return 0;

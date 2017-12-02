@@ -15,13 +15,14 @@ namespace kvak {
 
 demodulator::demodulator()
 	:
+	timing_delta(1.0),
 	delay_line(interp::num_taps * 2, 0.0),
 	delay_line_i(0),
 	sample_prev_prev(0.0),
 	sample_prev(0.0),
 	sample_now(0.0),
-	samples_per_symbol(2.0),
-	at_midpoint(false)
+	samples_per_symbol(1.0),
+	at_midpoint(true)
 {
 }
 
@@ -50,13 +51,14 @@ void demodulator::resample()
 
 void demodulator::timing_recovery()
 {
-	std::complex<float> rot = utils::expj<float>(M_PI / 4.0);
 	std::complex<float> error_c =
-		(this->sample_prev_prev*rot - this->sample_now*rot);
-	float err_i = error_c.imag() * (this->sample_prev*rot).imag();
-	float err_q = error_c.real() * (this->sample_prev*rot).real();
+		(this->sample_now - this->sample_prev_prev);
+	float err_i = error_c.real() * this->sample_prev.real();
+	float err_q = error_c.imag() * this->sample_prev.imag();
 	float err = err_i + err_q;
+
 	this->samples_per_symbol -= err * 0.001;
+	this->timing_delta -= err * 0.009;
 }
 
 
@@ -84,22 +86,28 @@ std::optional<std::uint8_t> demodulator::push_sample(std::complex<float> sample)
 		return {};
 	}
 
-	// Resample
-	this->resample();
+	std::optional<std::uint8_t> ret;
 
-	this->at_midpoint = !this->at_midpoint;
-	if (this->at_midpoint) {
-		return {};
+	while (this->timing_delta <= 1.0) {
+		// Resample
+		this->resample();
+
+		this->timing_delta += this->samples_per_symbol;
+
+		this->at_midpoint = !this->at_midpoint;
+		if (this->at_midpoint) {
+			continue;
+		}
+
+		this->timing_recovery();
+		this->costas.push_sample(this->sample_now);
+
+		if (ret.has_value()) {
+			std::cerr << "We are running way too fast, dropping symbols!" << std::endl;
+		}
+
+		ret = this->calculate_output();
 	}
-
-	this->timing_recovery();
-	this->timing_delta += this->samples_per_symbol;
-	if (this->timing_delta < 0) {
-		this->timing_delta = 0;
-	}
-	this->costas.push_sample(this->sample_now);
-
-	std::uint8_t ret = this->calculate_output();
 	return ret;
 }
 
