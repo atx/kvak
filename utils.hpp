@@ -39,4 +39,8 @@ std::complex<T> expj(T phase)
 	return std::exp(std::complex<T>(0.0, phase));
 }
 
+std::string replace_first(const std::string &haystack,
+						  const std::string &needle,
+						  const std::string &with);
+
 }

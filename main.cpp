@@ -142,12 +142,14 @@ int main(int argc, char *argv[])
 	std::vector<kvak::demodulator> demods(args.nchannels, kvak::demodulator());
 	std::vector<std::FILE *> output_files;
 	for (unsigned int n = 0; n < args.nchannels; n++) {
-		std::string name = args.output_path;  // TODO: Implement wildcard replace
+		std::string name = kvak::utils::replace_first(
+				args.output_path, "%d", std::to_string(n));
 		std::FILE *file = std::fopen(name.c_str(), "w");
 		if (file == nullptr) {
 			std::cerr << "Failed to open the output file " << args.output_path << std::endl;
 			return EXIT_FAILURE;
 		}
+		std::cerr << "Opened file " << name << " for output" << std::endl;
 		output_files.push_back(file);
 	}
 
