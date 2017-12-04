@@ -4,9 +4,11 @@
 #include <cstdio>
 #include <experimental/filesystem>
 #include <iostream>
+#include <thread>
 
 #include "demodulator.hpp"
 #include "utils.hpp"
+#include "server.hpp"
 
 namespace filesystem = std::experimental::filesystem;
 
@@ -27,6 +29,7 @@ struct arguments {
 		fifo_mode(false),
 		chunk_size(1024),
 		unpack(true),
+		bind("127.0.0.1:6677"),
 		loop(false)
 	{
 	}
@@ -42,6 +45,7 @@ struct arguments {
 	bool fifo_mode;
 	std::size_t chunk_size;
 	bool unpack;
+	std::string bind;
 	bool loop;
 };
 
@@ -56,6 +60,7 @@ static struct argp_option argp_options[] = {
 	{ "chunk-size", 'c',	"CHUNK",		0,		"Chunk size",			0 },
 	{ "dont-unpack", arguments::arg_ids::DONT_UNPACK,
 		nullptr,		0,		"Don't unpack the output symbols", 0 },
+	{ "bind",		'b',	"ADDR",			0,		"Bind to ADDR:PORT",	0 },
 	{ "loop",		 arguments::arg_ids::LOOP,
 		nullptr,		0,		"Loop the input file", 0 },
 	{ nullptr,		0,		nullptr,		0,		nullptr,				0 },
@@ -87,6 +92,10 @@ static error_t parse_opt(int key, char *arg_, struct argp_state *state)
 		if (args->chunk_size == 0) {
 			FAIL("Invalid chunk size specified (0)");
 		}
+		break;
+	case 'b':
+		args->bind = arg;
+		// TODO: Check the argument maybe?
 		break;
 	case arguments::arg_ids::DONT_UNPACK:
 		args->unpack = false;
@@ -160,6 +169,11 @@ int main(int argc, char *argv[])
 		std::cerr << "Opened file " << name << " for output" << std::endl;
 		output_files.push_back(file);
 	}
+
+	// Start up the server
+	std::thread server_thread([&] () {
+		kvak::server::server(args.bind, demods);
+	});
 
 	while (true) {
 		std::size_t len = std::fread(

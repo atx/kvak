@@ -3,6 +3,9 @@ project (kvak)
 
 set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_EXPORT_COMPILE_COMMANDS ON)
+set (CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CMAKE_SOURCE_DIR}/cmake/")
+
+find_package (CapnProto REQUIRED)
 
 option (WITH_OPTIMIZATION "Enable aggressive compiler optimizations" ON)
 option (WITH_NATIVE "Enable native compiler optimizations (may make the binary
@@ -36,6 +39,10 @@ endif ()
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter")
 
+set (CAPNPC_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
+include_directories (${CAPNP_INCLUDE_DIRS} ${CAPNPC_OUTPUT_DIR})
+add_definitions (${CAPNP_DEFINITIONS})
+capnp_generate_cpp (CAPNP_SRCS CAPNP_HDRS schema.capnp)
 
 set (INTERPOL_TAPS_FILE_PATH "${CMAKE_CURRENT_BINARY_DIR}/interpol_taps.hpp")
 add_custom_command(
@@ -46,8 +53,9 @@ add_custom_command(
 )
 
 add_executable (kvak main.cpp costas.cpp demodulator.cpp interpolator.cpp
-	gardner.cpp utils.cpp ${INTERPOL_TAPS_FILE_PATH})
-target_link_libraries (kvak stdc++fs)
+	gardner.cpp utils.cpp server.cpp
+	${CAPNP_SRCS} ${CAPNP_HDRS} ${INTERPOL_TAPS_FILE_PATH})
+target_link_libraries (kvak stdc++fs ${CAPNP_LIBRARIES})
 target_include_directories (kvak PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR})
 
