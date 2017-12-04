@@ -26,12 +26,14 @@ struct arguments {
 		output_path(""),
 		fifo_mode(false),
 		chunk_size(1024),
-		unpack(true)
+		unpack(true),
+		loop(false)
 	{
 	}
 
 	enum arg_ids {
-		DONT_UNPACK = 1000
+		DONT_UNPACK = 1000,
+		LOOP = 1001,
 	};
 
 	unsigned int nchannels;
@@ -40,6 +42,7 @@ struct arguments {
 	bool fifo_mode;
 	std::size_t chunk_size;
 	bool unpack;
+	bool loop;
 };
 
 
@@ -53,6 +56,8 @@ static struct argp_option argp_options[] = {
 	{ "chunk-size", 'c',	"CHUNK",		0,		"Chunk size",			0 },
 	{ "dont-unpack", arguments::arg_ids::DONT_UNPACK,
 		nullptr,		0,		"Don't unpack the output symbols", 0 },
+	{ "loop",		 arguments::arg_ids::LOOP,
+		nullptr,		0,		"Loop the input file", 0 },
 	{ nullptr,		0,		nullptr,		0,		nullptr,				0 },
 };
 
@@ -85,6 +90,9 @@ static error_t parse_opt(int key, char *arg_, struct argp_state *state)
 		break;
 	case arguments::arg_ids::DONT_UNPACK:
 		args->unpack = false;
+		break;
+	case arguments::arg_ids::LOOP:
+		args->loop = true;
 		break;
 	case ARGP_KEY_END:
 		if (!args->input_path.has_filename()) {
@@ -161,6 +169,10 @@ int main(int argc, char *argv[])
 			input_file
 		);
 		if (len != input_buffer.size()) {
+			if (args.loop) {
+				std::fseek(input_file, 0, SEEK_SET);
+				continue;
+			}
 			std::cerr << "Short read (" << len << "), quitting..." << std::endl;
 			break;
 		}
