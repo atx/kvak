@@ -5,8 +5,8 @@
 #include <thread>
 
 
+#include "log.hpp"
 #include "schema.capnp.h"
-
 #include "server.hpp"
 
 
@@ -42,9 +42,9 @@ server::server(const std::string &bind,
 	:
 	ezrpc(kj::heap<ServiceImpl>(), bind)
 {
-	std::cerr << "Server starting up" << std::endl;
+	kvak::log::info << "Server starting up";
 	kj::NEVER_DONE.wait(this->ezrpc.getWaitScope());
-	std::cerr << "Server finished" << std::endl;
+	kvak::log::info << "Server finished";
 }
 
 }

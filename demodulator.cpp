@@ -3,6 +3,7 @@
 #include <iostream>
 
 #include "interpolator.hpp"
+#include "log.hpp"
 #include "utils.hpp"
 
 #include "demodulator.hpp"
@@ -90,7 +91,7 @@ std::optional<std::uint8_t> demodulator::push_sample(std::complex<float> sample)
 		this->costas.push_sample(this->sample_now);
 
 		if (ret.has_value()) {
-			std::cerr << "We are running way too fast, dropping symbols!" << std::endl;
+			log::error << "We are running way too fast, dropping symbols!";
 		}
 
 		ret = this->calculate_output();

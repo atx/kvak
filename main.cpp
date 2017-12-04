@@ -7,8 +7,9 @@
 #include <thread>
 
 #include "demodulator.hpp"
-#include "utils.hpp"
+#include "log.hpp"
 #include "server.hpp"
+#include "utils.hpp"
 
 namespace filesystem = std::experimental::filesystem;
 
@@ -149,12 +150,9 @@ int main(int argc, char *argv[])
 
 	std::FILE *input_file = std::fopen(args.input_path.c_str(), "r");
 	if (input_file == nullptr) {
-		std::cerr << "Failed to open the input file " << args.input_path << std::endl;
+		kvak::log::error << "Failed to open the input file " << args.input_path;
 		return EXIT_FAILURE;
 	}
-
-	std::cout << std::fixed;
-	std::cout.precision(4);
 
 	std::vector<kvak::demodulator> demods(args.nchannels, kvak::demodulator());
 	std::vector<std::FILE *> output_files;
@@ -163,10 +161,10 @@ int main(int argc, char *argv[])
 				args.output_path, "%d", std::to_string(n));
 		std::FILE *file = std::fopen(name.c_str(), "w");
 		if (file == nullptr) {
-			std::cerr << "Failed to open the output file " << args.output_path << std::endl;
+			kvak::log::error << "Failed to open the output file " << args.output_path;
 			return EXIT_FAILURE;
 		}
-		std::cerr << "Opened file " << name << " for output" << std::endl;
+		kvak::log::info << "Opened file " << name << " for output";
 		output_files.push_back(file);
 	}
 
@@ -185,9 +183,10 @@ int main(int argc, char *argv[])
 		if (len != input_buffer.size()) {
 			if (args.loop) {
 				std::fseek(input_file, 0, SEEK_SET);
+				kvak::log::debug << "Looping";
 				continue;
 			}
-			std::cerr << "Short read (" << len << "), quitting..." << std::endl;
+			kvak::log::error << "Short read (" << len << "), quitting...";
 			break;
 		}
 
