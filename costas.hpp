@@ -12,6 +12,10 @@ public:
 	void push_sample(std::complex<float> sample);
 	std::complex<float> advance(std::complex<float> sample);
 
+	float get_phase_increment() {
+		return this->phase_increment;
+	}
+
 private:
 	static float calculate_phase_error(std::complex<float> sample);
 

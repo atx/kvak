@@ -4,6 +4,7 @@
 #include <cstdio>
 #include <experimental/filesystem>
 #include <iostream>
+#include <mutex>
 #include <thread>
 
 #include "demodulator.hpp"
@@ -169,8 +170,9 @@ int main(int argc, char *argv[])
 	}
 
 	// Start up the server
+	std::mutex server_mtx;  // We have one global mutex for all channels
 	std::thread server_thread([&] () {
-		kvak::server::server(args.bind, demods);
+		kvak::server::server(args.bind, demods, server_mtx);
 	});
 
 	while (true) {
@@ -190,6 +192,7 @@ int main(int argc, char *argv[])
 			break;
 		}
 
+		std::lock_guard<std::mutex> lock(server_mtx);
 		auto iter = input_buffer.cbegin();
 		for (unsigned int n = 0; n < args.nchannels; n++) {
 			std::optional<std::uint8_t> ret = demods[n].push_sample(*iter++);

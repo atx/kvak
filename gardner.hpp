@@ -21,6 +21,11 @@ public:
 	// Amount of samples we are currently forward/behind
 	float timing_delta;
 
+	float get_resampling_fraction()
+	{
+		return this->resampling_fraction;
+	}
+
 private:
 	// Amount of samples per half symbol
 	float resampling_fraction;

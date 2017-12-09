@@ -99,4 +99,14 @@ std::optional<std::uint8_t> demodulator::push_sample(std::complex<float> sample)
 	return ret;
 }
 
+demodulator::info demodulator::get_info()
+{
+	info ret;
+	ret.frequency_offset = this->costas.get_phase_increment();
+	ret.timing_offset = this->gardner.get_resampling_fraction();
+	ret.is_muted = false;  // TODO
+	ret.power_level = 0.0;  // TODO
+	return ret;
+}
+
 }
