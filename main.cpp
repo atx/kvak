@@ -171,9 +171,11 @@ int main(int argc, char *argv[])
 
 	// Start up the server
 	std::mutex server_mtx;  // We have one global mutex for all channels
-	std::thread server_thread([&] () {
-		kvak::server::server(args.bind, demods, server_mtx);
-	});
+	if (args.bind != "false") {
+		std::thread server_thread([&] () {
+			kvak::server::server(args.bind, demods, server_mtx);
+		});
+	}
 
 	while (true) {
 		std::size_t len = std::fread(

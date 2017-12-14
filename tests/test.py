@@ -128,7 +128,8 @@ if __name__ == "__main__":
 
             print_info("Running kvak on {}".format(data_file))
             subprocess.check_output(
-                [str(kvak_bin), "-i", str(data_file), "-o", fdemod.name]
+                [str(kvak_bin), "-i", str(data_file), "-o", fdemod.name,
+                 "-b", "false"]
             )
             print_info("Running tetra-rx on {}".format(fdemod.name))
             osmotetra_output = subprocess.check_output(
