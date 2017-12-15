@@ -37,52 +37,88 @@ print_fail = colored_print(colorama.Fore.LIGHTRED_EX)
 if __name__ == "__main__":
     cases = [
         TestCase(
-            "data.1.cf32",
+            "data.1.1.cf32",
             4854, 25714,
             3272, 14821,
             "77f6354a9cb8637b249749ca02cb1c6b"
         ),
         TestCase(
-            "data.2.cf32",
+            "data.1.2.cf32",
             3205, 66235,
             3090, 43268,
             "d8babbf8c1f55087e45501406d7fd1c2"
         ),
         TestCase(
-            "data.3.cf32",
+            "data.1.3.cf32",
             4813, 34791,
             4563, 19217,
             "9f731ac58a3d7405a79e5681ede70d1f"
         ),
         TestCase(
-            "data.4.cf32",
+            "data.1.4.cf32",
             2027, 119063,
             2027, 119071,
             "99fbdf2dedf97c32b0871f7affa8c9f7"
         ),
         TestCase(
-            "data.5.cf32",
+            "data.1.5.cf32",
             686, 107650,
             960, 98415,
             "51ac2db3ba00094a2930cfcca3b3d790"
         ),
         TestCase(
-            "data.6.cf32",
+            "data.1.6.cf32",
             3512, 98118,
             3518, 98150,
             "362b06e7766bd9da94c9b71b8daee8e7"
         ),
         TestCase(
-            "data.7.cf32",
+            "data.1.7.cf32",
             4052, 40741,
             1091, 6231,
             "5a3b79c97326769daf7235449476215b"
         ),
         TestCase(
-            "data.8.cf32",
+            "data.1.8.cf32",
             878, 118958,
             906, 111220,
             "626600ac153197da87f479e6c2b7d036"
+        ),
+        TestCase(
+            "data.2.4.cf32",
+            1248, 9669,
+            2509, 43000,
+            "941b21e64b1b0992563a77792dade0f8"
+        ),
+        TestCase(
+            "data.2.6.cf32",
+            346, 20877,
+            248, 49468,
+            "648fc63aeec3cc534cfa54dfbe51ca9b"
+        ),
+        TestCase(
+            "data.2.7.cf32",
+            830, 4997,
+            1052, 17634,
+            "d6478f5148ee71cb453d241f9562343a"
+        ),
+        TestCase(
+            "data.2.8.cf32",
+            4959, 38310,
+            5018, 44781,
+            "6d131abe9060d1ed7b3aacdf19ce8f30"
+        ),
+        TestCase(
+            "data.2.16.cf32",
+            3479, 44778,
+            3479, 44824,
+            "4f5ff6f5bcfb173156021527894dc869"
+        ),
+        TestCase(
+            "data.2.17.cf32",
+            169, 50201,
+            178, 50284,
+            "b0d6dc91f727461d6f2a8d409c21282a"
         ),
     ]
 
