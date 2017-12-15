@@ -34,6 +34,9 @@ void costas::push_sample(std::complex<float> sample)
 	// https://github.com/gnuradio/gnuradio/blob/master/gr-blocks/lib/control_loop.cc
 	float freq_weight = 0.00377634 * 0.5;
 	this->phase_increment += error * freq_weight;
+	this->phase_increment = utils::modular_clamp<float>(
+		this->phase_increment, -M_PI*2, M_PI*2, M_PI*2
+	);
 
 	this->last_error = error;
 }
