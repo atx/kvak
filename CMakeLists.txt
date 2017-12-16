@@ -53,7 +53,7 @@ add_custom_command(
 )
 
 add_executable (kvak main.cpp costas.cpp demodulator.cpp interpolator.cpp
-	gardner.cpp utils.cpp server.cpp log.cpp
+	gardner.cpp utils.cpp server.cpp log.cpp agc.cpp
 	${CAPNP_SRCS} ${CAPNP_HDRS} ${INTERPOL_TAPS_FILE_PATH})
 target_link_libraries (kvak stdc++fs ${CAPNP_LIBRARIES})
 target_include_directories (kvak PRIVATE ${CMAKE_CURRENT_BINARY_DIR}

@@ -7,6 +7,7 @@
 #include <mutex>
 #include <thread>
 
+#include "agc.hpp"
 #include "demodulator.hpp"
 #include "log.hpp"
 #include "server.hpp"
@@ -177,6 +178,8 @@ int main(int argc, char *argv[])
 		}
 	});
 
+	kvak::agc agc(args.nchannels);
+
 	while (true) {
 		std::size_t len = std::fread(
 			input_buffer.data(),
@@ -193,6 +196,8 @@ int main(int argc, char *argv[])
 			kvak::log::error << "Short read (" << len << "), quitting...";
 			break;
 		}
+
+		agc.push_samples(input_buffer.data(), 1);
 
 		std::lock_guard<std::mutex> lock(server_mtx);
 		auto iter = input_buffer.cbegin();
