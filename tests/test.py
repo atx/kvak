@@ -142,6 +142,10 @@ if __name__ == "__main__":
     regex_fail = re.compile(b"CRC COMP.*WRONG")
     regex_ok = re.compile(b"CRC COMP.*OK")
 
+    total_ok = 0
+    total_expected_ok = 0
+    total_reference_ok = 0
+
     with tempfile.NamedTemporaryFile() as fdemod:
         for case in cases:
             data_file = data_dir / case.filename
@@ -179,6 +183,10 @@ if __name__ == "__main__":
             d_ok = crc_ok_n - case.expected_crc_ok
             passed = d_ok >= 0 and d_fail >= -d_ok
 
+            total_ok += crc_ok_n
+            total_expected_ok += case.expected_crc_ok
+            total_reference_ok += case.reference_crc_ok
+
             print_fn = print_ok if passed else print_fail
             print_fn("Found {: 7d} wrong (expected {: 7d}, reference {: 7d})"
                      .format(crc_fail_n, case.expected_crc_fail, case.reference_crc_fail))
@@ -186,3 +194,8 @@ if __name__ == "__main__":
                      .format(crc_ok_n, case.expected_crc_ok, case.reference_crc_ok))
             if passed and (d_ok != 0 or d_fail != 0):
                 print_warn("Measured values don't match expectations")
+
+    print_ok(
+        "In total, found {: 7d} ok (expected {: 7d}, reference {: 7d})"
+        .format(total_ok, total_expected_ok, total_reference_ok)
+    )
