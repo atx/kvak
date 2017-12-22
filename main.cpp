@@ -6,6 +6,8 @@
 #include <iostream>
 #include <mutex>
 #include <thread>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "agc.hpp"
 #include "demodulator.hpp"
@@ -161,6 +163,15 @@ int main(int argc, char *argv[])
 	for (unsigned int n = 0; n < args.nchannels; n++) {
 		std::string name = kvak::utils::replace_first(
 				args.output_path, "%d", std::to_string(n));
+
+		if (args.fifo_mode && !filesystem::is_fifo(name)) {
+			int ret = mkfifo(name.c_str(), S_IRUSR | S_IWUSR);
+			if (ret) {
+				kvak::log::error << "Failed to create FIFO " << name << ": " << strerror(errno);
+				return EXIT_FAILURE;
+			}
+		}
+
 		std::FILE *file = std::fopen(name.c_str(), "w");
 		if (file == nullptr) {
 			kvak::log::error << "Failed to open the output file " << args.output_path;
