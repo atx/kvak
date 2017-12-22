@@ -184,6 +184,7 @@ int main(int argc, char *argv[])
 	// Start up the server
 	std::mutex server_mtx;  // We have one global mutex for all channels
 	std::thread server_thread([&] () {
+		// This is annoyingly hacky
 		if (args.bind != "false") {
 			kvak::server::server(args.bind, demods, server_mtx);
 		}
@@ -226,5 +227,10 @@ int main(int argc, char *argv[])
 				}
 			}
 		}
+	}
+
+	if (args.bind == "false") {
+		// Uuuh, we have to gracefully kill the thread somehow in the other case
+		server_thread.join();
 	}
 }
