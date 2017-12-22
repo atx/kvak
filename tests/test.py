@@ -120,6 +120,12 @@ if __name__ == "__main__":
             178, 50284,
             "b0d6dc91f727461d6f2a8d409c21282a"
         ),
+        TestCase(
+            "data.long.1.cf32",
+            16509, 749077,
+            16761, 814655,
+            "689b2ebb9d7ef8a1544538ff231a0c58"
+        )
     ]
 
     parser = argparse.ArgumentParser()
