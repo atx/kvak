@@ -1,12 +1,21 @@
 
 #include <string>
 #include <ostream>
+#include <string.h>
 
 #pragma once
 
 namespace kvak::log {
 
-// TODO: This is somewhat fragile
+// TODO: This (everything here) is somewhat fragile
+
+class perror_class {};
+extern perror_class perror;
+
+static inline std::ostream &operator<<(std::ostream &os, const perror_class pr)
+{
+	return os << " : " << strerror(errno);
+}
 
 class log_wrapper {
 public:

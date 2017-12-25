@@ -154,7 +154,8 @@ int main(int argc, char *argv[])
 
 	std::FILE *input_file = std::fopen(args.input_path.c_str(), "r");
 	if (input_file == nullptr) {
-		kvak::log::error << "Failed to open the input file " << args.input_path;
+		kvak::log::error << "Failed to open the input file " << args.input_path
+			<< kvak::log::perror;
 		return EXIT_FAILURE;
 	}
 
@@ -167,14 +168,16 @@ int main(int argc, char *argv[])
 		if (args.fifo_mode && !filesystem::is_fifo(name)) {
 			int ret = mkfifo(name.c_str(), S_IRUSR | S_IWUSR);
 			if (ret) {
-				kvak::log::error << "Failed to create FIFO " << name << ": " << strerror(errno);
+				kvak::log::error << "Failed to create FIFO " << name
+					<< kvak::log::perror;
 				return EXIT_FAILURE;
 			}
 		}
 
 		std::FILE *file = std::fopen(name.c_str(), "w");
 		if (file == nullptr) {
-			kvak::log::error << "Failed to open the output file " << args.output_path;
+			kvak::log::error << "Failed to open the output file "
+				<< args.output_path << kvak::log::perror;
 			return EXIT_FAILURE;
 		}
 		kvak::log::info << "Opened file " << name << " for output";
