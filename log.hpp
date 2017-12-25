@@ -42,7 +42,7 @@ public:
 	};
 
 	template<typename T>
-	log_ender operator<<(T &val)
+	log_ender operator<<(T &&val)
 	{
 		return log_ender(this->stream << this->prefix << val);
 	}
