@@ -144,14 +144,15 @@ int main(int argc, char *argv[])
 	struct arguments args;
 	argp_parse(&argp_parser, argc, argv, 0, nullptr, &args);
 
-	// TODO
-	args.chunk_size = 1;
-	std::vector<std::complex<float>> input_buffer;
-	input_buffer.resize(args.chunk_size * args.nchannels);
-	//std::vector<std::uint8_t> output_buffer;
-	//output_buffer.resize(args.chunk_size * args.nchannels *
-	//					 kvak::demodulator::bits_per_symbol);
+	// Setup buffers
+	std::vector<std::complex<float>> input_buffer(args.chunk_size * args.nchannels);
+	std::vector<std::vector<std::uint8_t>> output_buffers(args.nchannels,
+		std::vector<std::uint8_t>(args.chunk_size * 2, 0)
+	);
+	std::vector<unsigned int> output_counters(args.nchannels, 0);
 
+	// Open input file - note that we can block for a considerable amount
+	// of time if this is a FIFO
 	std::FILE *input_file = std::fopen(args.input_path.c_str(), "r");
 	if (input_file == nullptr) {
 		kvak::log::error << "Failed to open the input file " << args.input_path
@@ -159,6 +160,8 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
+	// Open output files (mkfifo if necesarry, again, we can block here in
+	// that case until the other side connects)
 	std::vector<kvak::demodulator> demods(args.nchannels, kvak::demodulator());
 	std::vector<std::FILE *> output_files;
 	for (unsigned int n = 0; n < args.nchannels; n++) {
@@ -202,33 +205,58 @@ int main(int argc, char *argv[])
 			input_buffer.size(),
 			input_file
 		);
-		if (len != input_buffer.size()) {
-			if (args.loop) {
-				std::fseek(input_file, 0, SEEK_SET);
-				kvak::log::debug << "Looping";
-				continue;
+		if (len == 0) {
+			if (std::feof(input_file)) {
+				if (args.loop) {
+					std::fseek(input_file, 0, SEEK_SET);
+					kvak::log::debug << "Looping";
+					continue;
+				}
+				kvak::log::info << "EOF reached, quitting";
+				break;
 			}
-			kvak::log::error << "Short read (" << len << "), quitting...";
+			kvak::log::error << "Read error, quitting...";
 			break;
 		}
 
-		agc.push_samples(input_buffer.data(), 1);
+		agc.push_samples(input_buffer.data(), len / args.nchannels);
 
 		std::lock_guard<std::mutex> lock(server_mtx);
 		auto iter = input_buffer.cbegin();
-		for (unsigned int n = 0; n < args.nchannels; n++) {
-			std::optional<std::uint8_t> ret = demods[n].push_sample(*iter++);
-			if (ret) {
+		for (unsigned int i = 0; i < len / args.nchannels; i++) {
+			for (unsigned int n = 0; n < args.nchannels; n++) {
+				std::optional<std::uint8_t> ret = demods[n].push_sample(*iter++);
+				if (!ret) {
+					continue;
+				}
+
 				std::uint8_t val = ret.value();
 				if (args.unpack) {
-					uint8_t data[2] = {
-						kvak::utils::bit(val, 1), kvak::utils::bit(val, 0)
-					};
-					std::fwrite(data, sizeof(data), 1, output_files[n]);
+					output_buffers[n][output_counters[n]++] =
+						kvak::utils::bit(val, 1);
+					output_buffers[n][output_counters[n]++] =
+						kvak::utils::bit(val, 0);
 				} else {
-					std::fwrite(&val, sizeof(val), 1, output_files[n]);
+					output_buffers[n][output_counters[n]++] = val;
 				}
 			}
+		}
+
+		// Dump all the bits we have collected in this chunk
+		for (unsigned int n = 0; n < args.nchannels; n++) {
+			std::fwrite(
+				output_buffers[n].data(),
+				sizeof(output_buffers[n][0]),
+				output_counters[n],
+				output_files[n]
+			);
+			output_counters[n] = 0;
+		}
+
+		if (len % args.nchannels != 0) {
+			// At this point, we either quit after the next read or loop if --loop
+			// got passed
+			kvak::log::error << "Dropping short read of " << (len % args.nchannels);
 		}
 	}
 
