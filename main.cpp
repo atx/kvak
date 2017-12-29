@@ -222,10 +222,13 @@ int main(int argc, char *argv[])
 		agc.push_samples(input_buffer.data(), len / args.nchannels);
 
 		std::lock_guard<std::mutex> lock(server_mtx);
-		auto iter = input_buffer.cbegin();
-		for (unsigned int i = 0; i < len / args.nchannels; i++) {
-			for (unsigned int n = 0; n < args.nchannels; n++) {
-				std::optional<std::uint8_t> ret = demods[n].push_sample(*iter++);
+
+		#pragma omp parallel for
+		for (unsigned int n = 0; n < args.nchannels; n++) {
+			auto iter = input_buffer.cbegin() + n;
+			for (unsigned int i = 0; i < len / args.nchannels; i++) {
+				std::optional<std::uint8_t> ret = demods[n].push_sample(*iter);
+				iter += args.nchannels;
 				if (!ret) {
 					continue;
 				}

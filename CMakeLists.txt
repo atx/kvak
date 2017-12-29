@@ -17,7 +17,7 @@ option (WITH_UBSAN "Enable UBSan" OFF)
 option (WITH_OPENMP "Enable OpenMP" ON)
 
 if (WITH_OPTIMIZATION)
-	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -flto")
+	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -fopenmp -flto")
 	set (CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -flto")
 endif ()
 if (WITH_FAST_MATH)
