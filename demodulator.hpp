@@ -22,14 +22,8 @@ public:
 
 	std::optional<std::uint8_t> push_sample(std::complex<float> sample);
 
-	struct info {
-		float timing_offset;
-		float frequency_offset;
-		float power_level;
-		bool is_muted;
-	};
-
-	info get_info();
+	float get_timing_offset();
+	float get_frequency_offset();
 
 private:
 

@@ -34,6 +34,12 @@ void agc::process_chunk(std::complex<float> *data)
 }
 
 
+float agc::get_channel_power(unsigned int channel)
+{
+	return this->gains[channel];
+}
+
+
 void agc::push_samples(std::complex<float> *data, size_t nchunks)
 {
 	for (size_t chunk = 0; chunk < nchunks; chunk++) {

@@ -15,9 +15,9 @@ namespace kvak::server {
 class ChannelImpl : public Service::Channel::Server {
 public:
 
-	ChannelImpl(kvak::demodulator &demod, std::mutex &mutex)
+	ChannelImpl(kvak::channel &channel, std::mutex &mutex)
 		:
-		demod(demod),
+		channel(channel),
 		mutex(mutex)
 	{
 	}
@@ -35,27 +35,27 @@ public:
 		// Releasing and relocking the mutex again and again, which could
 		// possibly leading to very large latency
 		std::lock_guard<std::mutex> lock(this->mutex);
-		auto chinfo = this->demod.get_info();
-		info.setTimingOffset(chinfo.timing_offset);
-		info.setFrequencyOffset(chinfo.frequency_offset);
-		info.setPowerLevel(chinfo.power_level);  // Not yet implemented
-		info.setIsMuted(chinfo.is_muted);
+		//auto chinfo = this->demod.get_info();
+		info.setTimingOffset(this->channel.demod.get_timing_offset());
+		info.setFrequencyOffset(this->channel.demod.get_frequency_offset());
+		info.setPowerLevel(this->channel.get_power());  // Not yet implemented
+		info.setIsMuted(this->channel.is_muted());
 
 		return kj::READY_NOW;
 	}
 
 private:
-	kvak::demodulator &demod;
+	kvak::channel &channel;
 	std::mutex &mutex;
 };
 
 class ServiceImpl : public Service::Server {
 public:
 
-	ServiceImpl(std::vector<kvak::demodulator> &demods, std::mutex &mutex)
+	ServiceImpl(std::vector<kvak::channel> &channels, std::mutex &mutex)
 		:
 		start_time(std::chrono::steady_clock::now()),
-		demods(demods),
+		channels(channels),
 		mutex(mutex)
 	{
 	}
@@ -78,10 +78,10 @@ public:
 		auto results = context.getResults();
 
 		std::lock_guard<std::mutex> lock(this->mutex);
-		results.initList(this->demods.size());
+		results.initList(this->channels.size());
 		auto list = results.getList();
-		for (std::size_t i = 0; i < this->demods.size(); i++) {
-			list.set(i, kj::heap<ChannelImpl>(demods[i], this->mutex));
+		for (std::size_t i = 0; i < this->channels.size(); i++) {
+			list.set(i, kj::heap<ChannelImpl>(channels[i], this->mutex));
 		}
 
 		return kj::READY_NOW;
@@ -89,16 +89,16 @@ public:
 
 private:
 	std::chrono::steady_clock::time_point start_time;
-	std::vector<kvak::demodulator> &demods;
+	std::vector<kvak::channel> &channels;
 	std::mutex &mutex;
 };
 
 
 server::server(const std::string &bind,
-			   std::vector<kvak::demodulator> &demods,
+			   std::vector<kvak::channel> &channels,
 			   std::mutex &mutex)
 	:
-	ezrpc(kj::heap<ServiceImpl>(demods, mutex), bind)
+	ezrpc(kj::heap<ServiceImpl>(channels, mutex), bind)
 {
 	kvak::log::info << "Server starting up";
 	kj::NEVER_DONE.wait(this->ezrpc.getWaitScope());

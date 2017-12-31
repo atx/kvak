@@ -4,14 +4,14 @@
 #include <capnp/ez-rpc.h>
 #include <mutex>
 
-#include "demodulator.hpp"
+#include "main.hpp"
 
 namespace kvak::server {
 
 class server {
 public:
 					server(const std::string &bind,
-						   std::vector<demodulator> &demods,
+						   std::vector<channel> &channels,
 						   std::mutex &mutex);
 
 private:

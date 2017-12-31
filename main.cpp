@@ -12,10 +12,64 @@
 #include "agc.hpp"
 #include "demodulator.hpp"
 #include "log.hpp"
+#include "main.hpp"
 #include "server.hpp"
 #include "utils.hpp"
 
 namespace filesystem = std::experimental::filesystem;
+
+// Implementation of channel -- this should probably get moved to another file TODO
+
+namespace kvak {
+
+
+float channel::get_power()
+{
+	return this->agc_all.get_channel_power(this->id);
+}
+
+
+void channel::mute(bool m)
+{
+
+}
+
+
+bool channel::is_muted()
+{
+	return false;  // TODO
+}
+
+
+void channel::push_sample(std::complex<float> sample)
+{
+	std::optional<std::uint8_t> ret = this->demod.push_sample(sample);
+	if (!ret) {
+		return;
+	}
+
+	std::uint8_t val = ret.value();
+	// TODO: Do we want not-unpacking back?
+	this->out_data[this->out_counter++] =
+			kvak::utils::bit(val, 1);
+	this->out_data[this->out_counter++] =
+			kvak::utils::bit(val, 0);
+}
+
+
+void channel::flush()
+{
+	// TODO: Error checking?
+	std::fwrite(
+		this->out_data.data(),
+		sizeof(this->out_data[0]),
+		this->out_counter,
+		this->file
+	);
+	this->out_counter = 0;
+}
+
+}
 
 // argp stuff
 
@@ -33,14 +87,12 @@ struct arguments {
 		output_path(""),
 		fifo_mode(false),
 		chunk_size(1024),
-		unpack(true),
 		bind("127.0.0.1:6677"),
 		loop(false)
 	{
 	}
 
 	enum arg_ids {
-		DONT_UNPACK = 1000,
 		LOOP = 1001,
 	};
 
@@ -49,7 +101,6 @@ struct arguments {
 	filesystem::path output_path;
 	bool fifo_mode;
 	std::size_t chunk_size;
-	bool unpack;
 	std::string bind;
 	bool loop;
 };
@@ -63,8 +114,6 @@ static struct argp_option argp_options[] = {
 	{ "fifo",		'f',	nullptr,		0,
 		"Explicitly create output FIFOs instead of files",					0 },
 	{ "chunk-size", 'c',	"CHUNK",		0,		"Chunk size",			0 },
-	{ "dont-unpack", arguments::arg_ids::DONT_UNPACK,
-		nullptr,		0,		"Don't unpack the output symbols", 0 },
 	{ "bind",		'b',	"ADDR",			0,		"Bind to ADDR:PORT",	0 },
 	{ "loop",		 arguments::arg_ids::LOOP,
 		nullptr,		0,		"Loop the input file", 0 },
@@ -101,9 +150,6 @@ static error_t parse_opt(int key, char *arg_, struct argp_state *state)
 	case 'b':
 		args->bind = arg;
 		// TODO: Check the argument maybe?
-		break;
-	case arguments::arg_ids::DONT_UNPACK:
-		args->unpack = false;
 		break;
 	case arguments::arg_ids::LOOP:
 		args->loop = true;
@@ -146,10 +192,6 @@ int main(int argc, char *argv[])
 
 	// Setup buffers
 	std::vector<std::complex<float>> input_buffer(args.chunk_size * args.nchannels);
-	std::vector<std::vector<std::uint8_t>> output_buffers(args.nchannels,
-		std::vector<std::uint8_t>(args.chunk_size * 2, 0)
-	);
-	std::vector<unsigned int> output_counters(args.nchannels, 0);
 
 	// Open input file - note that we can block for a considerable amount
 	// of time if this is a FIFO
@@ -160,10 +202,11 @@ int main(int argc, char *argv[])
 		return EXIT_FAILURE;
 	}
 
+	kvak::agc agc(args.nchannels);
+	std::vector<kvak::channel> channels;
+
 	// Open output files (mkfifo if necesarry, again, we can block here in
 	// that case until the other side connects)
-	std::vector<kvak::demodulator> demods(args.nchannels, kvak::demodulator());
-	std::vector<std::FILE *> output_files;
 	for (unsigned int n = 0; n < args.nchannels; n++) {
 		std::string name = kvak::utils::replace_first(
 				args.output_path, "%d", std::to_string(n));
@@ -184,7 +227,7 @@ int main(int argc, char *argv[])
 			return EXIT_FAILURE;
 		}
 		kvak::log::info << "Opened file " << name << " for output";
-		output_files.push_back(file);
+		channels.push_back(kvak::channel(n, agc, file, args.chunk_size * 2));
 	}
 
 	// Start up the server
@@ -192,13 +235,13 @@ int main(int argc, char *argv[])
 	std::thread server_thread([&] () {
 		// This is annoyingly hacky
 		if (args.bind != "false") {
-			kvak::server::server(args.bind, demods, server_mtx);
+			kvak::server::server(args.bind, channels, server_mtx);
 		}
 	});
 
-	kvak::agc agc(args.nchannels);
-
 	while (true) {
+		// Note that the input floats are read in _machine byte order_
+		// This is intentional
 		std::size_t len = std::fread(
 			input_buffer.data(),
 			sizeof(input_buffer[0]),
@@ -226,34 +269,15 @@ int main(int argc, char *argv[])
 		#pragma omp parallel for
 		for (unsigned int n = 0; n < args.nchannels; n++) {
 			auto iter = input_buffer.cbegin() + n;
+			kvak::channel &ch = channels[n];
 			for (unsigned int i = 0; i < len / args.nchannels; i++) {
-				std::optional<std::uint8_t> ret = demods[n].push_sample(*iter);
+				ch.push_sample(*iter);
 				iter += args.nchannels;
-				if (!ret) {
-					continue;
-				}
-
-				std::uint8_t val = ret.value();
-				if (args.unpack) {
-					output_buffers[n][output_counters[n]++] =
-						kvak::utils::bit(val, 1);
-					output_buffers[n][output_counters[n]++] =
-						kvak::utils::bit(val, 0);
-				} else {
-					output_buffers[n][output_counters[n]++] = val;
-				}
 			}
 		}
 
-		// Dump all the bits we have collected in this chunk
-		for (unsigned int n = 0; n < args.nchannels; n++) {
-			std::fwrite(
-				output_buffers[n].data(),
-				sizeof(output_buffers[n][0]),
-				output_counters[n],
-				output_files[n]
-			);
-			output_counters[n] = 0;
+		for (auto &ch : channels) {
+			ch.flush();
 		}
 
 		if (len % args.nchannels != 0) {
