@@ -1,9 +1,10 @@
 
+#pragma once
+
+#include <functional>
 #include <string>
 #include <ostream>
 #include <string.h>
-
-#pragma once
 
 namespace kvak::log {
 
@@ -22,44 +23,66 @@ public:
 	log_wrapper(const std::string &prefix, std::ostream &stream)
 		:
 		prefix(prefix),
-		stream(stream)
+		stream(stream),
+		muted(false)
 	{
 	}
 
 	class log_ender {
 	public:
-		log_ender(std::ostream &stream)
+		log_ender(std::ostream &stream, bool muted)
 			:
-			stream(stream)
+			stream(stream),
+			muted(muted)
 		{
 		}
 
 		~log_ender()
 		{
-			this->stream << "\x1b[0m" << std::endl;
+			if (!this->muted) {
+				this->stream << "\x1b[0m" << std::endl;
+			}
 		}
 
 		template<typename T>
 		log_ender &operator<<(T &&val)
 		{
-			this->stream << val;
+			if (!this->muted) {
+				this->stream << val;
+			}
 			return *this;
 		}
 
 	private:
 		std::ostream &stream;
+		bool muted;
 	};
+
+	void mute(bool b)
+	{
+		this->muted = b;
+	}
+
+	void redirect(std::ostream &stream)
+	{
+		this->stream = stream;
+	}
 
 	template<typename T>
 	log_ender operator<<(T &&val)
 	{
-		return log_ender(this->stream << this->prefix << val);
+		// TODO: This requires some major unhackify-ing
+		if (this->muted) {
+			return log_ender(this->stream.get(), true);
+		}
+		return log_ender(this->stream.get() << this->prefix << val, false);
 	}
 
 
 private:
 	std::string prefix;
-	std::ostream &stream;
+	std::reference_wrapper<std::ostream> stream;
+	bool muted;
 };
 
 extern log_wrapper debug;

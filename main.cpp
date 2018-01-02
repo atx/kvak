@@ -88,7 +88,8 @@ struct arguments {
 		fifo_mode(false),
 		chunk_size(1024),
 		bind("127.0.0.1:6677"),
-		loop(false)
+		loop(false),
+		verbose(false)
 	{
 	}
 
@@ -103,6 +104,7 @@ struct arguments {
 	std::size_t chunk_size;
 	std::string bind;
 	bool loop;
+	bool verbose;
 };
 
 
@@ -117,6 +119,7 @@ static struct argp_option argp_options[] = {
 	{ "bind",		'b',	"ADDR",			0,		"Bind to ADDR:PORT",	0 },
 	{ "loop",		 arguments::arg_ids::LOOP,
 		nullptr,		0,		"Loop the input file", 0 },
+	{ "verbose",	'v',	nullptr,		0,		"Enable verbose debugging",	0 },
 	{ nullptr,		0,		nullptr,		0,		nullptr,				0 },
 };
 
@@ -154,6 +157,9 @@ static error_t parse_opt(int key, char *arg_, struct argp_state *state)
 	case arguments::arg_ids::LOOP:
 		args->loop = true;
 		break;
+	case 'v':
+		args->verbose = true;
+		break;
 	case ARGP_KEY_END:
 		if (!args->input_path.has_filename()) {
 			FAIL("No input path specified");
@@ -189,6 +195,8 @@ int main(int argc, char *argv[])
 {
 	struct arguments args;
 	argp_parse(&argp_parser, argc, argv, 0, nullptr, &args);
+
+	kvak::log::debug.mute(!args.verbose);
 
 	// Setup buffers
 	std::vector<std::complex<float>> input_buffer(args.chunk_size * args.nchannels);
@@ -226,9 +234,11 @@ int main(int argc, char *argv[])
 				<< args.output_path << kvak::log::perror;
 			return EXIT_FAILURE;
 		}
-		kvak::log::info << "Opened file " << name << " for output";
+		kvak::log::debug << "Opened file " << name << " for output";
 		channels.push_back(kvak::channel(n, agc, file, args.chunk_size * 2));
 	}
+	kvak::log::info << "Opened files " << args.output_path << " [0-"
+		<< args.nchannels << "]";
 
 	// Start up the server
 	std::mutex server_mtx;  // We have one global mutex for all channels
