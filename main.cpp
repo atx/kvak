@@ -196,7 +196,9 @@ int main(int argc, char *argv[])
 	struct arguments args;
 	argp_parse(&argp_parser, argc, argv, 0, nullptr, &args);
 
-	kvak::log::debug.mute(!args.verbose);
+	if (!args.verbose) {
+		kvak::log::debug.mute();
+	}
 
 	// Setup buffers
 	std::vector<std::complex<float>> input_buffer(args.chunk_size * args.nchannels);

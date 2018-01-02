@@ -23,44 +23,45 @@ public:
 	log_wrapper(const std::string &prefix, std::ostream &stream)
 		:
 		prefix(prefix),
-		stream(stream),
-		muted(false)
+		stream(stream)
 	{
 	}
 
 	class log_ender {
 	public:
-		log_ender(std::ostream &stream, bool muted)
+		log_ender()
+		{
+		}
+
+		log_ender(std::ostream &stream)
 			:
-			stream(stream),
-			muted(muted)
+			stream(stream)
 		{
 		}
 
 		~log_ender()
 		{
-			if (!this->muted) {
-				this->stream << "\x1b[0m" << std::endl;
+			if (this->stream) {
+				this->stream.value().get() << "\x1b[0m" << std::endl;
 			}
 		}
 
 		template<typename T>
 		log_ender &operator<<(T &&val)
 		{
-			if (!this->muted) {
-				this->stream << val;
+			if (this->stream) {
+				this->stream.value().get() << val;
 			}
 			return *this;
 		}
 
 	private:
-		std::ostream &stream;
-		bool muted;
+		std::optional<std::reference_wrapper<std::ostream>> stream;
 	};
 
-	void mute(bool b)
+	void mute()
 	{
-		this->muted = b;
+		this->stream.reset();
 	}
 
 	void redirect(std::ostream &stream)
@@ -72,17 +73,16 @@ public:
 	log_ender operator<<(T &&val)
 	{
 		// TODO: This requires some major unhackify-ing
-		if (this->muted) {
-			return log_ender(this->stream.get(), true);
+		if (!this->stream) {
+			return log_ender();
 		}
-		return log_ender(this->stream.get() << this->prefix << val, false);
+		return log_ender(this->stream.value().get() << this->prefix << val);
 	}
 
 
 private:
 	std::string prefix;
-	std::reference_wrapper<std::ostream> stream;
-	bool muted;
+	std::optional<std::reference_wrapper<std::ostream>> stream;
 };
 
 extern log_wrapper debug;
