@@ -261,7 +261,7 @@ int main(int argc, char *argv[])
 		channels.push_back(kvak::channel(n, agc, name, args.chunk_size * 2));
 	}
 	kvak::log::info << "Opened files " << args.output_path << " [0-"
-		<< args.nchannels << "]";
+		<< (args.nchannels - 1) << "]";
 
 	// Start up the server
 	std::mutex server_mtx;  // We have one global mutex for all channels
