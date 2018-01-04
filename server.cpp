@@ -44,6 +44,15 @@ public:
 		return kj::READY_NOW;
 	}
 
+	kj::Promise<void> mute(Service::Channel::Server::MuteContext context) override
+	{
+		auto params = context.getParams();
+
+		std::lock_guard<std::mutex> lock(this->mutex);
+		this->channel.mute(params.getMute());
+		return kj::READY_NOW;
+	}
+
 private:
 	kvak::channel &channel;
 	std::mutex &mutex;

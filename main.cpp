@@ -31,13 +31,13 @@ float channel::get_power()
 
 void channel::mute(bool m)
 {
-
+	this->muted= m;
 }
 
 
 bool channel::is_muted()
 {
-	return false;  // TODO
+	return this->muted;
 }
 
 
@@ -282,6 +282,12 @@ int main(int argc, char *argv[])
 		for (unsigned int n = 0; n < args.nchannels; n++) {
 			auto iter = input_buffer.cbegin() + n;
 			kvak::channel &ch = channels[n];
+			if (ch.is_muted()) {
+				// TODO: As the running set is not updated very often, it's
+				// probably for the best to make a separate "running" list
+				// instead of skipping like this
+				continue;
+			}
 			for (unsigned int i = 0; i < len / args.nchannels; i++) {
 				ch.push_sample(*iter);
 				iter += args.nchannels;

@@ -14,7 +14,8 @@ public:
 		agc_all(agc),
 		file(file),
 		out_data(preallocate, 0),
-		out_counter(0)
+		out_counter(0),
+		muted(false)
 	{
 	};
 
@@ -36,6 +37,7 @@ private:
 	std::FILE *file;
 	std::vector<std::uint8_t> out_data;
 	unsigned int out_counter;
+	bool muted;
 };
 
 }
