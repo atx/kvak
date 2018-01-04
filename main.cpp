@@ -3,6 +3,7 @@
 #include <complex>
 #include <cstdio>
 #include <experimental/filesystem>
+#include <fcntl.h>
 #include <iostream>
 #include <mutex>
 #include <thread>
@@ -21,6 +22,14 @@ namespace filesystem = std::experimental::filesystem;
 // Implementation of channel -- this should probably get moved to another file TODO
 
 namespace kvak {
+
+
+channel::~channel()
+{
+	if (this->file != nullptr) {
+		std::fclose(this->file);
+	}
+}
 
 
 float channel::get_power()
@@ -59,14 +68,33 @@ void channel::push_sample(std::complex<float> sample)
 
 void channel::flush()
 {
-	// TODO: Error checking?
+	unsigned int to_write = this->out_counter;
+	this->out_counter = 0;  // Whatever happens, we have to drop the buffer
+
+	// This is done to prevent blocking on channels which don't have any other
+	// side reading from the FIFO - useful for debugging/tetra-rx crashing etc.
+	if (this->file == nullptr) {
+		// Note that O_CREAT should only apply for non-FIFO mode, as FIFOs
+		// are alreadt created
+		int fd = open(this->output_path.c_str(), O_WRONLY | O_NONBLOCK | O_CREAT, 0660);
+		if (fd < 0) {
+			// There is noone at the reading end, try next time
+			if (errno != ENXIO) {
+				kvak::log::info << "Failed to open " << kvak::log::perror;
+			}
+			return;
+		}
+		kvak::log::debug << "Opened file " << this->output_path << " for output";
+		this->file = fdopen(fd, "wb");
+	}
+
+	// If the other side hung up, we are going to get EPIPE here
 	std::fwrite(
 		this->out_data.data(),
 		sizeof(this->out_data[0]),
-		this->out_counter,
+		to_write,
 		this->file
 	);
-	this->out_counter = 0;
 }
 
 }
@@ -230,14 +258,7 @@ int main(int argc, char *argv[])
 			}
 		}
 
-		std::FILE *file = std::fopen(name.c_str(), "w");
-		if (file == nullptr) {
-			kvak::log::error << "Failed to open the output file "
-				<< args.output_path << kvak::log::perror;
-			return EXIT_FAILURE;
-		}
-		kvak::log::debug << "Opened file " << name << " for output";
-		channels.push_back(kvak::channel(n, agc, file, args.chunk_size * 2));
+		channels.push_back(kvak::channel(n, agc, name, args.chunk_size * 2));
 	}
 	kvak::log::info << "Opened files " << args.output_path << " [0-"
 		<< args.nchannels << "]";
