@@ -2,6 +2,8 @@
 #pragma once
 
 #include <complex>
+#include <functional>
+#include <cstdlib>
 
 namespace kvak::utils {
 
@@ -42,5 +44,22 @@ std::complex<T> expj(T phase)
 std::string replace_first(const std::string &haystack,
 						  const std::string &needle,
 						  const std::string &with);
+
+
+// This is a hacky method for injecting constants through environment
+// variables.
+template <typename T>
+class env_initializer {
+public:
+
+	env_initializer(const std::string &name, T &value)
+	{
+		const char *envval = std::getenv(name.c_str());
+		if (envval != nullptr) {
+			std::istringstream(envval) >> value;
+		}
+	}
+};
+
 
 }

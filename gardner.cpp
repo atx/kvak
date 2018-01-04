@@ -2,9 +2,16 @@
 #include <algorithm>
 #include <iostream>
 
+#include "utils.hpp"
 #include "gardner.hpp"
 
 namespace kvak {
+
+static float proportional_weight = 0.009;
+static float integral_weight = 0.001;
+
+static utils::env_initializer<float> proportional_weight_init("KVAK_GARDNER_P", proportional_weight);
+static utils::env_initializer<float> integral_weight_init("KVAK_GARDNER_I", integral_weight);
 
 gardner::gardner()
 	:
@@ -36,8 +43,8 @@ void gardner::recover(std::complex<float> prev,
 	float err_q = err_c.imag() * mid.imag();
 	float err = err_i + err_q;
 
-	this->resampling_fraction -= err * 0.001;
-	this->timing_delta -= err * 0.009;
+	this->resampling_fraction -= err * integral_weight;
+	this->timing_delta -= err * proportional_weight;
 }
 
 

@@ -7,6 +7,12 @@
 
 namespace kvak {
 
+static float freq_weight = 0.00377634 * 0.5;
+static float phase_weight = 0.0849974 * 0.5;
+
+static utils::env_initializer<float> freq_weight_init("KVAK_COSTAS_FREQ", freq_weight);
+static utils::env_initializer<float> phase_weight_init("KVAK_COSTAS_PHASE", phase_weight);
+
 costas::costas()
 	:
 	phase_increment(-M_PI / 8),
@@ -32,7 +38,7 @@ void costas::push_sample(std::complex<float> sample)
 
 	// Magical constants taken from
 	// https://github.com/gnuradio/gnuradio/blob/master/gr-blocks/lib/control_loop.cc
-	float freq_weight = 0.00377634 * 0.5;
+	// https://www.dsprelated.com/showthread/comp.dsp/112658-1.php
 	this->phase_increment += error * freq_weight;
 	this->phase_increment = utils::modular_clamp<float>(
 		this->phase_increment, -M_PI*2, M_PI*2, M_PI*2
@@ -44,7 +50,6 @@ void costas::push_sample(std::complex<float> sample)
 
 std::complex<float> costas::advance(std::complex<float> sample)
 {
-	float phase_weight = 0.0849974 * 0.5;
 	this->phase_offset += this->last_error * phase_weight;
 	this->phase_offset += this->phase_increment;
 	this->phase_offset = utils::modular_clamp<float>(
