@@ -109,7 +109,7 @@ server::server(const std::string &bind,
 	:
 	ezrpc(kj::heap<ServiceImpl>(channels, mutex), bind)
 {
-	kvak::log::info << "Server starting up";
+	kvak::log::info << "Server starting up on " << bind;
 	kj::NEVER_DONE.wait(this->ezrpc.getWaitScope());
 	kvak::log::info << "Server finished";
 }

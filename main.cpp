@@ -265,12 +265,13 @@ int main(int argc, char *argv[])
 
 	// Start up the server
 	std::mutex server_mtx;  // We have one global mutex for all channels
-	std::thread server_thread([&] () {
-		// This is annoyingly hacky
-		if (args.bind != "false") {
+	std::optional<std::thread> server_thread;
+
+	if (args.bind != "false") {
+		server_thread = std::thread([&] () {
 			kvak::server::server(args.bind, channels, server_mtx);
-		}
-	});
+		});
+	}
 
 	while (true) {
 		// Note that the input floats are read in _machine byte order_
@@ -326,8 +327,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if (args.bind == "false") {
-		// Uuuh, we have to gracefully kill the thread somehow in the other case
-		server_thread.join();
+	if (server_thread) {
+		// TODO: Kill the thread somehow
 	}
 }
