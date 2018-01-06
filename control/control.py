@@ -147,10 +147,27 @@ def do_tui(service, args):
 
     asyncio.ensure_future(periodic_update())
     top = urwid.Filler(flow, "top", top=3)
+
+    def key_handler(key):
+        if key in ("q", "Q"):
+            raise urwid.ExitMainLoop()
+        if key in ("m", "M"):
+            for ch in channels:
+                ch.mute(key == "m")
+
+    # Hack for
+    # https://github.com/urwid/urwid/issues/170
+    orig_show_cursor = urwid.escape.SHOW_CURSOR
     urwid.escape.SHOW_CURSOR = ''
+
     event_loop = urwid.AsyncioEventLoop()
-    loop = urwid.MainLoop(top, pallete, event_loop=event_loop)
-    loop.run()
+    loop = urwid.MainLoop(
+        top, pallete, event_loop=event_loop, unhandled_input=key_handler
+    )
+    try:
+        loop.run()
+    finally:
+        loop.screen.write(orig_show_cursor)
 
 
 if __name__ == "__main__":
