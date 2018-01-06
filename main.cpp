@@ -76,7 +76,7 @@ void channel::flush()
 	if (this->file == nullptr) {
 		// Note that O_CREAT should only apply for non-FIFO mode, as FIFOs
 		// are alreadt created
-		int fd = open(this->output_path.c_str(), O_WRONLY | O_NONBLOCK | O_CREAT, 0660);
+		int fd = open(this->output_path.c_str(), O_WRONLY | O_NONBLOCK | O_CREAT | O_TRUNC, 0660);
 		if (fd < 0) {
 			// There is noone at the reading end, try next time
 			if (errno != ENXIO) {
