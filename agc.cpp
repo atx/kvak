@@ -27,9 +27,6 @@ void agc::process_chunk(std::complex<float> *data)
 
 	for (unsigned int i = 0; i < this->nchannels; i++) {
 		data[i] = data[i] / this->gains[i];
-		// TODO: We want to have 1.0 here, but rest of the code isn't ready
-		// for that at the moment
-		data[i] *= 0.05;
 	}
 }
 
