@@ -18,7 +18,6 @@ option (WITH_OPENMP "Enable OpenMP" ON)
 
 if (WITH_OPTIMIZATION)
 	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -flto")
-	set (CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -flto")
 endif ()
 if (WITH_FAST_MATH)
 	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ffast-math")
@@ -28,7 +27,6 @@ if (WITH_NATIVE)
 endif ()
 if (WITH_ASAN)
 	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer -fsanitize=address")
-	set (CMAKE_LINKER_FLAGS "${CMAKE_LINKER_FLAGS} -fno-omit-frame-pointer -fsanitize=address")
 endif ()
 if (WITH_MSAN)
 	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=memory")
@@ -41,8 +39,7 @@ if (WITH_OPENMP)
 endif ()
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb")
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter")
-set (CMAKE_CXX_FLAGS "${CMAKE_LINKER_FLAGS} -lpthread")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter -Wno-unknown-pragmas")
 
 set (CAPNPC_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
 include_directories (${CAPNP_INCLUDE_DIRS} ${CAPNPC_OUTPUT_DIR})
@@ -60,7 +57,7 @@ add_custom_command(
 add_executable (kvak main.cpp costas.cpp demodulator.cpp interpolator.cpp
 	gardner.cpp utils.cpp server.cpp log.cpp agc.cpp
 	${CAPNP_SRCS} ${CAPNP_HDRS} ${INTERPOL_TAPS_FILE_PATH})
-target_link_libraries (kvak stdc++fs ${CAPNP_LIBRARIES})
+target_link_libraries (kvak pthread stdc++fs ${CAPNP_LIBRARIES})
 target_include_directories (kvak PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR})
 
