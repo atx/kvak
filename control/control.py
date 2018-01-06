@@ -44,6 +44,32 @@ def do_watch(service, args):
         time.sleep(args.refresh_rate)
 
 
+class DecibelProgressBar(urwid.ProgressBar):
+
+    def __init__(self, normal, complete,
+                 min_db=0.0, max_db=100.0, current=0, satt=None):
+        super().__init__(normal, complete, done=(max_db - min_db), satt=satt)
+        # Unfortunately, ProgressBar by itself does not support negative ranges,
+        # so we have to hack around it
+        self.min_db = min_db
+        self.max_db = max_db
+        self.decibels = current
+
+    def get_text(self):
+        return "{:.0f} dB".format(self.decibels)
+
+    @property
+    def decibels(self):
+        return self.current + self.min_db
+
+    @decibels.setter
+    def decibels(self, current):
+        # The _set_completion and friends should be left alone
+        # as they are used by the internal code and wrapping them to do
+        # the offsetting leads to unpredictable shit happening.
+        self.current = current - self.min_db
+
+
 class ChannelWidget(urwid.WidgetWrap):
 
     def __init__(self, n, channel):
@@ -58,9 +84,9 @@ class ChannelWidget(urwid.WidgetWrap):
         # ProgressBar does not like negative numbers... TODO
         self._min_db = -40
         self._max_db = 20
-        self.pg_power = urwid.ProgressBar(
+        self.pg_power = DecibelProgressBar(
             "pg normal power", "pg complete power",
-            0, self._max_db - self._min_db,
+            -40, 20, 0,
             "pg smooth"
         )
         self.mute_button = urwid.Button("?")
@@ -79,7 +105,8 @@ class ChannelWidget(urwid.WidgetWrap):
         info = self.channel.getInfo().wait().info
 
         db = math.log10(info.powerLevel) * 10
-        self.pg_power.set_completion(db - self._min_db)
+        self.pg_power.decibels = db
+
         self.mute_button.set_label("Unmute" if info.isMuted else "Mute")
         self._muting = not info.isMuted
 
