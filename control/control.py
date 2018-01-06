@@ -117,7 +117,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-s", "--server",
-        required=True,
+        default="127.0.0.1:6677",
     )
     subparsers = parser.add_subparsers(dest="operation")
     subparsers.required = True
