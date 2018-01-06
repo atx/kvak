@@ -11,7 +11,7 @@ namespace kvak {
 class channel {
 public:
 	channel(unsigned int id, agc &agc, const std::experimental::filesystem::path &path,
-			unsigned int preallocate)
+			unsigned int preallocate, bool muted)
 		:
 		id(id),
 		agc_all(agc),
@@ -19,7 +19,7 @@ public:
 		file(nullptr),
 		out_data(preallocate, 0),
 		out_counter(0),
-		muted(false)
+		muted(muted)
 	{
 	};
 

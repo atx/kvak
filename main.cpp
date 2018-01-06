@@ -117,7 +117,8 @@ struct arguments {
 		chunk_size(1024),
 		bind("127.0.0.1:6677"),
 		loop(false),
-		verbose(false)
+		verbose(false),
+		muted(false)
 	{
 	}
 
@@ -133,6 +134,7 @@ struct arguments {
 	std::string bind;
 	bool loop;
 	bool verbose;
+	bool muted;
 };
 
 
@@ -147,6 +149,7 @@ static struct argp_option argp_options[] = {
 	{ "bind",		'b',	"ADDR",			0,		"Bind to ADDR:PORT",	0 },
 	{ "loop",		 arguments::arg_ids::LOOP,
 		nullptr,		0,		"Loop the input file", 0 },
+	{ "muted",		'm',	nullptr,		0,		"Start all channels muted", 0 },
 	{ "verbose",	'v',	nullptr,		0,		"Enable verbose debugging",	0 },
 	{ nullptr,		0,		nullptr,		0,		nullptr,				0 },
 };
@@ -187,6 +190,9 @@ static error_t parse_opt(int key, char *arg_, struct argp_state *state)
 		break;
 	case 'v':
 		args->verbose = true;
+		break;
+	case 'm':
+		args->muted = true;
 		break;
 	case ARGP_KEY_END:
 		if (!args->input_path.has_filename()) {
@@ -258,7 +264,7 @@ int main(int argc, char *argv[])
 			}
 		}
 
-		channels.push_back(kvak::channel(n, agc, name, args.chunk_size * 2));
+		channels.push_back(kvak::channel(n, agc, name, args.chunk_size * 2, args.muted));
 	}
 	kvak::log::info << "Opened files " << args.output_path << " [0-"
 		<< (args.nchannels - 1) << "]";
