@@ -75,7 +75,7 @@ class ChannelWidget(urwid.WidgetWrap):
     def __init__(self, n, channel):
         self.channel = channel
         self.title = urwid.Text(
-            ("title", "Channel #{}".format(n)),
+            ("title", " Channel #{} ".format(n)),
             align="center"
         )
         # We want to keep track about what our button says and do precisely that
@@ -89,16 +89,22 @@ class ChannelWidget(urwid.WidgetWrap):
             -40, 20, 0,
             "pg smooth"
         )
-        self.mute_button = urwid.Button("?")
-        urwid.connect_signal(self.mute_button, "click", self._toggle_mute)
+
+        self.mute_button = urwid.Button("?", self._toggle_mute)
+        self.mute_button._label.align = "center"
+        self.mute_button_attr = urwid.AttrMap(
+            self.mute_button, "mute unmuted", "mute focus"
+        )
 
         super().__init__(urwid.Pile([
             self.title, urwid.Text(""),
             self.pg_power,
-            self.mute_button
+            self.mute_button_attr,
         ]))
 
     def _toggle_mute(self, ev):
+        # It would be better to wake the updater thread, but whatever
+        self.mute_button.set_label("---")
         self.channel.mute(self._muting)
 
     def fetch_new_data(self):
@@ -108,16 +114,22 @@ class ChannelWidget(urwid.WidgetWrap):
         self.pg_power.decibels = db
 
         self.mute_button.set_label("Unmute" if info.isMuted else "Mute")
+        self.mute_button_attr.set_attr_map(
+            {None: ("mute muted" if info.isMuted else "mute unmuted")}
+        )
         self._muting = not info.isMuted
 
 
 def do_tui(service, args):
 
     pallete = [
-        ("title",   "black",        "white",        "standout"),
-        ('pg normal power',    'white',      'black', 'standout'),
-        ('pg complete power',  'white',      'dark magenta'),
-        ('pg smooth',           'dark magenta', 'black')
+        ("title",               "black",             "white"),
+        ("pg normal power",     "white",             "black"),
+        ("pg complete power",   "white",             "dark magenta"),
+        ("pg smooth",           "dark magenta",      "black"),
+        ("mute unmuted",        "light gray,bold",   "dark green"),
+        ("mute muted",          "light gray,bold",   "dark red"),
+        ("mute focus",          "white,bold",        "brown"),
     ]
 
     channels = service.listChannels().wait().list
@@ -131,10 +143,11 @@ def do_tui(service, args):
         while True:
             for cw in cws:
                 cw.fetch_new_data()
-            await asyncio.sleep(1)
+            await asyncio.sleep(0.25)
 
     asyncio.ensure_future(periodic_update())
     top = urwid.Filler(flow, "top", top=3)
+    urwid.escape.SHOW_CURSOR = ''
     event_loop = urwid.AsyncioEventLoop()
     loop = urwid.MainLoop(top, pallete, event_loop=event_loop)
     loop.run()
