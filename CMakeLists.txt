@@ -42,6 +42,7 @@ endif ()
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb")
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter")
+set (CMAKE_CXX_FLAGS "${CMAKE_LINKER_FLAGS} -lpthread")
 
 set (CAPNPC_OUTPUT_DIR ${CMAKE_CURRENT_BINARY_DIR})
 include_directories (${CAPNP_INCLUDE_DIRS} ${CAPNPC_OUTPUT_DIR})
