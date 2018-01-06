@@ -13,8 +13,21 @@ try:
 except ImportError:
     pass  # Oh well, we don't support TUI then
 
-# Uuh, don't forget to embed this in the python package later TODO
-kvak = capnp.load(str(pathlib.Path(__file__).absolute().parent.parent / "schema.capnp"))
+# TODO: This should eventually be made to a "proper" python package or something
+
+
+def load_capnp_schema():
+    here = pathlib.Path(__file__).absolute().parent
+    search_paths = [
+        here.parent / "share" / "kvak" / "schema.capnp",
+        here.parent / "schema.capnp",
+    ]
+    for path in search_paths:
+        if path.exists():
+            return capnp.load(str(path))
+    raise RuntimeError("Unable to find the schema.capnp file!")
+
+kvak = load_capnp_schema()
 
 
 def do_watch(service, args):

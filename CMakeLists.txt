@@ -67,3 +67,11 @@ target_include_directories (kvak PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
 add_executable (resample resample.cpp interpolator.cpp ${INTERPOL_TAPS_FILE_PATH})
 target_include_directories (resample PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR})
+
+
+install (TARGETS kvak
+	RUNTIME DESTINATION bin COMPONENT bin)
+install (PROGRAMS control/control.py RENAME kvakctl
+	DESTINATION bin COMPONENT bin)
+install (FILES schema.capnp
+	DESTINATION share/kvak)
