@@ -7,8 +7,8 @@
 
 namespace kvak {
 
-static float freq_weight = 0.0000944085;
-static float phase_weight = 0.00212494;
+static float freq_weight = 2.64876113e-05;
+static float phase_weight = 2.09187484e-04;
 
 static utils::env_initializer<float> freq_weight_init("KVAK_COSTAS_FREQ", freq_weight);
 static utils::env_initializer<float> phase_weight_init("KVAK_COSTAS_PHASE", phase_weight);
