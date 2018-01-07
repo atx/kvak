@@ -44,6 +44,7 @@ void gardner::recover(std::complex<float> prev,
 	float err = err_i + err_q;
 
 	this->resampling_fraction -= err * integral_weight;
+	this->resampling_fraction = std::clamp(this->resampling_fraction, 0.8f, 1.2f);
 	this->timing_delta -= err * proportional_weight;
 }
 
