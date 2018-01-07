@@ -1,0 +1,8 @@
+Source: kvak
+Maintainer: Josef Gajdusek <atx@atx.name>
+Build-Depends: debhelper (>= 9), lsb-release, cmake, build-essential, capnproto, 
+	libcapnp-dev, python3-numpy
+
+Package: kvak
+Architecture: any
+Description: pi/4-DQPSK Demodulator

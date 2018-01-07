@@ -1,0 +1,5 @@
+files
+.debhelper
+kvak.debhelper.log
+kvak.substvars
+kvak/

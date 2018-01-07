@@ -1,0 +1,3 @@
+tar-ignore = ".git/*"
+tar-ignore = "tests/*"
+tar-ignore = "tools/*"

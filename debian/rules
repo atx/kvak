@@ -1,0 +1,8 @@
+#! /usr/bin/make -f
+
+DISTRIBUTION = $(shell lsb_release -sr)
+VERSION = 0.1
+PACKAGEVERSION = $(VERSION-0)~$(DISTRIBUTION)0
+
+%:
+	dh $@
