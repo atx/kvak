@@ -1,0 +1,122 @@
+[
+  {
+    "filename": "data.1.1.cf32",
+    "expected_crc_fail": 4534,
+    "expected_crc_ok": 42066,
+    "reference_crc_fail": 3272,
+    "reference_crc_ok": 14821,
+    "md5": "77f6354a9cb8637b249749ca02cb1c6b"
+  },
+  {
+    "filename": "data.1.2.cf32",
+    "expected_crc_fail": 1560,
+    "expected_crc_ok": 88598,
+    "reference_crc_fail": 3090,
+    "reference_crc_ok": 43268,
+    "md5": "d8babbf8c1f55087e45501406d7fd1c2"
+  },
+  {
+    "filename": "data.1.3.cf32",
+    "expected_crc_fail": 3826,
+    "expected_crc_ok": 49559,
+    "reference_crc_fail": 4563,
+    "reference_crc_ok": 19217,
+    "md5": "9f731ac58a3d7405a79e5681ede70d1f"
+  },
+  {
+    "filename": "data.1.4.cf32",
+    "expected_crc_fail": 1924,
+    "expected_crc_ok": 119174,
+    "reference_crc_fail": 2027,
+    "reference_crc_ok": 119071,
+    "md5": "99fbdf2dedf97c32b0871f7affa8c9f7"
+  },
+  {
+    "filename": "data.1.5.cf32",
+    "expected_crc_fail": 393,
+    "expected_crc_ok": 112733,
+    "reference_crc_fail": 960,
+    "reference_crc_ok": 98415,
+    "md5": "51ac2db3ba00094a2930cfcca3b3d790"
+  },
+  {
+    "filename": "data.1.6.cf32",
+    "expected_crc_fail": 3262,
+    "expected_crc_ok": 98406,
+    "reference_crc_fail": 3518,
+    "reference_crc_ok": 98150,
+    "md5": "362b06e7766bd9da94c9b71b8daee8e7"
+  },
+  {
+    "filename": "data.1.7.cf32",
+    "expected_crc_fail": 3347,
+    "expected_crc_ok": 54352,
+    "reference_crc_fail": 1091,
+    "reference_crc_ok": 6231,
+    "md5": "5a3b79c97326769daf7235449476215b"
+  },
+  {
+    "filename": "data.1.8.cf32",
+    "expected_crc_fail": 781,
+    "expected_crc_ok": 120638,
+    "reference_crc_fail": 906,
+    "reference_crc_ok": 111220,
+    "md5": "626600ac153197da87f479e6c2b7d036"
+  },
+  {
+    "filename": "data.2.4.cf32",
+    "expected_crc_fail": 1059,
+    "expected_crc_ok": 44886,
+    "reference_crc_fail": 2509,
+    "reference_crc_ok": 43000,
+    "md5": "941b21e64b1b0992563a77792dade0f8"
+  },
+  {
+    "filename": "data.2.6.cf32",
+    "expected_crc_fail": 179,
+    "expected_crc_ok": 50169,
+    "reference_crc_fail": 248,
+    "reference_crc_ok": 49468,
+    "md5": "648fc63aeec3cc534cfa54dfbe51ca9b"
+  },
+  {
+    "filename": "data.2.7.cf32",
+    "expected_crc_fail": 1140,
+    "expected_crc_ok": 22424,
+    "reference_crc_fail": 1052,
+    "reference_crc_ok": 17634,
+    "md5": "d6478f5148ee71cb453d241f9562343a"
+  },
+  {
+    "filename": "data.2.8.cf32",
+    "expected_crc_fail": 703,
+    "expected_crc_ok": 49149,
+    "reference_crc_fail": 5018,
+    "reference_crc_ok": 44781,
+    "md5": "6d131abe9060d1ed7b3aacdf19ce8f30"
+  },
+  {
+    "filename": "data.2.16.cf32",
+    "expected_crc_fail": 2262,
+    "expected_crc_ok": 46017,
+    "reference_crc_fail": 3479,
+    "reference_crc_ok": 44824,
+    "md5": "4f5ff6f5bcfb173156021527894dc869"
+  },
+  {
+    "filename": "data.2.17.cf32",
+    "expected_crc_fail": 114,
+    "expected_crc_ok": 50301,
+    "reference_crc_fail": 178,
+    "reference_crc_ok": 50284,
+    "md5": "b0d6dc91f727461d6f2a8d409c21282a"
+  },
+  {
+    "filename": "data.long.1.cf32",
+    "expected_crc_fail": 15324,
+    "expected_crc_ok": 828832,
+    "reference_crc_fail": 16761,
+    "reference_crc_ok": 814655,
+    "md5": "689b2ebb9d7ef8a1544538ff231a0c58"
+  }
+]
