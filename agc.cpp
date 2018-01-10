@@ -17,16 +17,17 @@ agc::agc(unsigned int nchannels)
 
 void agc::process_chunk(std::complex<float> *data)
 {
-	float weight = 0.001;
+	float weight = 0.1;
 
 	for (unsigned int i = 0; i < this->nchannels; i++) {
-		// Do we want separate IQ gain?
-		float ampl = (std::fabs(data[i].real()) + std::fabs(data[i].imag())) / 2.0;
-		this->gains[i] = this->gains[i] * (1.0 - weight) + weight * ampl;
+		data[i] = data[i] * this->gains[i];
 	}
 
 	for (unsigned int i = 0; i < this->nchannels; i++) {
-		data[i] = data[i] / this->gains[i];
+		float error =
+			(1.0 - std::fabs(data[i].real())) +
+			(1.0 - std::fabs(data[i].imag()));
+		this->gains[i] -= weight * error;
 	}
 }
 
