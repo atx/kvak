@@ -27,8 +27,8 @@ float costas::calculate_phase_error(std::complex<float> sample)
 	// https://github.com/gnuradio/gnuradio/blob/master/gr-digital/lib/costas_loop_cc_impl.cc#L122
 
 	return
-		-((sample.real() > 0.0 ? 1.0 : -1.0) * sample.imag() -
-		  (sample.imag() > 0.0 ? 1.0 : -1.0) * sample.real());
+		-(std::copysign(1.0, sample.real()) * sample.imag() -
+		  std::copysign(1.0, sample.imag()) * sample.real());
 }
 
 
