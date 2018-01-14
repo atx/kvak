@@ -15,8 +15,7 @@ import tempfile
 TestCase = collections.namedtuple(
     "TestCase", [
         "filename",
-        "expected_crc_fail", "expected_crc_ok",
-        "reference_crc_fail", "reference_crc_ok",
+        "expected_crc_ok", "reference_crc_ok",
         "md5"
     ]
 )
@@ -71,7 +70,6 @@ if __name__ == "__main__":
 
     data_dir = base_dir / "data"
 
-    regex_fail = re.compile(b"CRC COMP.*WRONG")
     regex_ok = re.compile(b"CRC COMP.*OK")
 
     total_ok = 0
@@ -111,11 +109,8 @@ if __name__ == "__main__":
                 stderr=subprocess.DEVNULL,  # tetra-rx outputs a lot of crap
             )
 
-            crc_fail_n = len(regex_fail.findall(osmotetra_output))
             crc_ok_n = len(regex_ok.findall(osmotetra_output))
-            d_fail = crc_fail_n - case.expected_crc_fail
             d_ok = crc_ok_n - case.expected_crc_ok
-            passed = d_ok >= 0 and d_fail >= -d_ok
 
             total_ok += crc_ok_n
             total_expected_ok += case.expected_crc_ok
@@ -123,19 +118,15 @@ if __name__ == "__main__":
 
             cases_new.append(TestCase(
                 filename=case.filename,
-                expected_crc_fail=crc_fail_n,
                 expected_crc_ok=crc_ok_n,
-                reference_crc_fail=case.reference_crc_fail,
                 reference_crc_ok=case.reference_crc_ok,
                 md5=case.md5,
             ))
 
-            print_fn = print_ok if passed else print_fail
-            print_fn("Found {: 7d} wrong (expected {: 7d}, reference {: 7d})"
-                     .format(crc_fail_n, case.expected_crc_fail, case.reference_crc_fail))
+            print_fn = print_ok if d_ok >= 0 else print_fail
             print_fn("Found {: 7d} ok    (expected {: 7d}, reference {: 7d})"
                      .format(crc_ok_n, case.expected_crc_ok, case.reference_crc_ok))
-            if passed and (d_ok != 0 or d_fail != 0):
+            if d_ok < 0:
                 print_warn("Measured values don't match expectations")
 
     print_ok(
