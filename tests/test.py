@@ -3,8 +3,10 @@
 import argparse
 import collections
 import colorama
+import concurrent.futures
 import functools
 import json
+import os
 import pathlib
 import re
 import subprocess
@@ -56,6 +58,14 @@ if __name__ == "__main__":
         "--update",
         action="store_true",
     )
+    parser.add_argument(
+        "--kvak-output",
+        action="store_true",
+    )
+    parser.add_argument(
+        "-j", "--jobs",
+        default=os.cpu_count(),
+    )
     args = parser.parse_args()
 
     with args.test_set.open("r") as fin:
@@ -72,36 +82,41 @@ if __name__ == "__main__":
 
     regex_ok = re.compile(b"CRC COMP.*OK")
 
-    total_ok = 0
-    total_expected_ok = 0
-    total_reference_ok = 0
+    def make_full_path(case):
+        return data_dir / case.filename
 
-    cases_new = []
+    for case in cases:
+        data_file = make_full_path(case)
 
-    with tempfile.NamedTemporaryFile() as fdemod:
-        for case in cases:
-            data_file = data_dir / case.filename
-            if not data_file.exists():
-                print_fail("Failed to find input file {}".format(data_file))
-                print_fail(
-                    "Unfortunately, as the data comes from a public network, "
-                    "adding it to the repository would expose me to legal risk "
-                    "*wink wink*"
-                )
-                continue
+        if not data_file.exists():
+            print_fail("Failed to find input file {}".format(data_file))
+            print_fail(
+                "Unfortunately, as the data comes from a public network, "
+                "adding it to the repository would expose me to legal risk "
+                "*wink wink*"
+            )
+            sys.exit(1)
 
-            if args.verify:
-                print_info("Running md5sum on {}".format(data_file))
-                md5sum = subprocess.check_output(
-                    ["md5sum", str(data_file)]
-                ).split()[0].decode()
-                if md5sum != case.md5:
-                    print_fail("MD5 mismatch detected({} != {})".format(md5sum, case.md5))
+        if not args.verify:
+            continue
 
+        print_info("Running md5sum on {}".format(data_file))
+        md5sum = subprocess.check_output(
+            ["md5sum", str(data_file)]
+        ).split()[0].decode()
+        if md5sum != case.md5:
+            print_fail("{}: MD5 mismatch detected({} != {})"
+                       .format(case.filename, md5sum, case.md5))
+        else:
+            print_ok("{}: MD5 OK".format(case.filename))
+
+    def run_test(data_file):
+        with tempfile.NamedTemporaryFile() as fdemod:
             print_info("Running kvak on {}".format(data_file))
             subprocess.check_output(
                 [str(kvak_bin), "-i", str(data_file), "-o", fdemod.name,
-                 "-b", "false"]
+                 "-b", "false"],
+                stderr=(subprocess.STDERR if args.kvak_output else subprocess.DEVNULL)
             )
             print_info("Running tetra-rx on {}".format(fdemod.name))
             osmotetra_output = subprocess.check_output(
@@ -109,7 +124,17 @@ if __name__ == "__main__":
                 stderr=subprocess.DEVNULL,  # tetra-rx outputs a lot of crap
             )
 
-            crc_ok_n = len(regex_ok.findall(osmotetra_output))
+            return len(regex_ok.findall(osmotetra_output))
+
+    total_ok = 0
+    total_expected_ok = 0
+    total_reference_ok = 0
+
+    cases_new = []
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=args.jobs) as executor:
+        result_gen = executor.map(run_test, (make_full_path(c) for c in cases))
+        for case, crc_ok_n in zip(cases, result_gen):
 
             total_ok += crc_ok_n
             total_expected_ok += case.expected_crc_ok
@@ -124,8 +149,8 @@ if __name__ == "__main__":
 
             print_fn = print_ok if crc_ok_n >= case.expected_crc_ok else print_fail
             print_fn(
-                "Found {: 7d} ok    (expected {: 7d} ({:.3f}), reference {: 7d} ({:.3f}))"
-                .format(crc_ok_n,
+                "{: <16}-> found {: 7d} ok    (expected {: 7d} ({:.3f}), reference {: 7d} ({:.3f}))"
+                .format(case.filename, crc_ok_n,
                         case.expected_crc_ok, crc_ok_n / case.expected_crc_ok,
                         case.reference_crc_ok, crc_ok_n / case.reference_crc_ok)
             )
