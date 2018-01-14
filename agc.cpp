@@ -17,17 +17,19 @@ agc::agc(unsigned int nchannels)
 
 void agc::process_chunk(std::complex<float> *data)
 {
-	float weight = 0.1;
+	float weight = 0.001;
 
 	for (unsigned int i = 0; i < this->nchannels; i++) {
 		data[i] = data[i] * this->gains[i];
 	}
 
 	for (unsigned int i = 0; i < this->nchannels; i++) {
-		float error =
-			(1.0 - std::fabs(data[i].real())) +
-			(1.0 - std::fabs(data[i].imag()));
-		this->gains[i] -= weight * error;
+		// This is magnitude squared, to avoid calculating sqrt()
+		float mag =
+			data[i].real() * data[i].real() +
+			data[i].imag() * data[i].imag();
+		float error = 1.0 - mag;
+		this->gains[i] += weight * error;
 	}
 }
 

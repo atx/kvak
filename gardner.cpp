@@ -7,8 +7,8 @@
 
 namespace kvak {
 
-static float proportional_weight = 1.16268032e-04;
-static float integral_weight = 1.71681427e-08;
+static float proportional_weight = 0.0009115413708799999;
+static float integral_weight = 1.3459823876799997e-07;
 
 static utils::env_initializer<float> proportional_weight_init("KVAK_GARDNER_P", proportional_weight);
 static utils::env_initializer<float> integral_weight_init("KVAK_GARDNER_I", integral_weight);
