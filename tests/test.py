@@ -110,7 +110,6 @@ if __name__ == "__main__":
             )
 
             crc_ok_n = len(regex_ok.findall(osmotetra_output))
-            d_ok = crc_ok_n - case.expected_crc_ok
 
             total_ok += crc_ok_n
             total_expected_ok += case.expected_crc_ok
@@ -123,15 +122,22 @@ if __name__ == "__main__":
                 md5=case.md5,
             ))
 
-            print_fn = print_ok if d_ok >= 0 else print_fail
-            print_fn("Found {: 7d} ok    (expected {: 7d}, reference {: 7d})"
-                     .format(crc_ok_n, case.expected_crc_ok, case.reference_crc_ok))
-            if d_ok < 0:
+            print_fn = print_ok if crc_ok_n >= case.expected_crc_ok else print_fail
+            print_fn(
+                "Found {: 7d} ok    (expected {: 7d} ({:.3f}), reference {: 7d} ({:.3f}))"
+                .format(crc_ok_n,
+                        case.expected_crc_ok, crc_ok_n / case.expected_crc_ok,
+                        case.reference_crc_ok, crc_ok_n / case.reference_crc_ok)
+            )
+            if crc_ok_n != case.expected_crc_ok:
                 print_warn("Measured values don't match expectations")
 
-    print_ok(
-        "In total, found {: 7d} ok (expected {: 7d}, reference {: 7d})"
-        .format(total_ok, total_expected_ok, total_reference_ok)
+    print_fn = print_ok if total_ok >= total_expected_ok else print_fail
+    print_fn(
+        "In total, found {: 7d} ok (expected {: 7d} ({:.3f}), reference {: 7d} ({:.3f}))"
+        .format(total_ok,
+                total_expected_ok, total_ok / total_expected_ok,
+                total_reference_ok, total_ok / total_reference_ok)
     )
 
     if args.update:
