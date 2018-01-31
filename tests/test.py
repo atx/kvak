@@ -66,17 +66,21 @@ if __name__ == "__main__":
         "-j", "--jobs",
         default=os.cpu_count(),
     )
+    parser.add_argument(
+        "-k", "--kvak",
+        type=pathlib.Path,
+        default=(base_dir.parent / "build/kvak")
+    )
     args = parser.parse_args()
 
     with args.test_set.open("r") as fin:
         cases = [TestCase(**d) for d in json.load(fin)]
 
     # TODO: Make this smarter
-    kvak_bin = base_dir.parent / "build/kvak"
-    if not kvak_bin.exists():
-        print("Couldn't find the kvak binary in {}".format(kvak_bin))
+    if not args.kvak.exists():
+        print("Couldn't find the kvak binary in {}".format(args.kvak))
         sys.exit(1)
-    print_info("Using kvak binary from {}".format(kvak_bin))
+    print_info("Using kvak binary from {}".format(args.kvak))
 
     data_dir = base_dir / "data"
 
@@ -114,7 +118,7 @@ if __name__ == "__main__":
         with tempfile.NamedTemporaryFile() as fdemod:
             print_info("Running kvak on {}".format(data_file))
             subprocess.check_output(
-                [str(kvak_bin), "-i", str(data_file), "-o", fdemod.name,
+                [str(args.kvak), "-i", str(data_file), "-o", fdemod.name,
                  "-b", "false"],
                 stderr=(subprocess.STDERR if args.kvak_output else subprocess.DEVNULL)
             )
