@@ -1,6 +1,7 @@
 
 #include <iostream>
 
+#include "expj.hpp"
 #include "utils.hpp"
 
 #include "costas.hpp"
@@ -48,15 +49,18 @@ void costas::push_sample(std::complex<float> sample)
 }
 
 
+static const expj_precalc<256> expj;
+
+
 std::complex<float> costas::advance(std::complex<float> sample)
 {
 	this->phase_offset += this->last_error * phase_weight;
 	this->phase_offset += this->phase_increment;
 	this->phase_offset = utils::modular_clamp<float>(
-		this->phase_offset, -M_PI*2, M_PI*2, M_PI*2
+		this->phase_offset, 0.0, M_PI*2, M_PI*2
 	);
 
-	return sample * utils::expj(this->phase_offset);
+	return sample * expj(this->phase_offset);
 }
 
 };

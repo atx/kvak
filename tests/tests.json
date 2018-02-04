@@ -1,19 +1,19 @@
 [
   {
     "filename": "data.1.1.cf32",
-    "expected_crc_ok": 42167,
+    "expected_crc_ok": 41933,
     "reference_crc_ok": 14821,
     "md5": "77f6354a9cb8637b249749ca02cb1c6b"
   },
   {
     "filename": "data.1.2.cf32",
-    "expected_crc_ok": 88475,
+    "expected_crc_ok": 88510,
     "reference_crc_ok": 43268,
     "md5": "d8babbf8c1f55087e45501406d7fd1c2"
   },
   {
     "filename": "data.1.3.cf32",
-    "expected_crc_ok": 49347,
+    "expected_crc_ok": 49370,
     "reference_crc_ok": 19217,
     "md5": "9f731ac58a3d7405a79e5681ede70d1f"
   },
@@ -25,7 +25,7 @@
   },
   {
     "filename": "data.1.5.cf32",
-    "expected_crc_ok": 112727,
+    "expected_crc_ok": 112742,
     "reference_crc_ok": 98415,
     "md5": "51ac2db3ba00094a2930cfcca3b3d790"
   },
@@ -37,13 +37,13 @@
   },
   {
     "filename": "data.1.7.cf32",
-    "expected_crc_ok": 54326,
+    "expected_crc_ok": 54292,
     "reference_crc_ok": 6231,
     "md5": "5a3b79c97326769daf7235449476215b"
   },
   {
     "filename": "data.1.8.cf32",
-    "expected_crc_ok": 120624,
+    "expected_crc_ok": 120628,
     "reference_crc_ok": 111220,
     "md5": "626600ac153197da87f479e6c2b7d036"
   },
@@ -55,19 +55,19 @@
   },
   {
     "filename": "data.2.6.cf32",
-    "expected_crc_ok": 50185,
+    "expected_crc_ok": 50189,
     "reference_crc_ok": 49468,
     "md5": "648fc63aeec3cc534cfa54dfbe51ca9b"
   },
   {
     "filename": "data.2.7.cf32",
-    "expected_crc_ok": 22708,
+    "expected_crc_ok": 22671,
     "reference_crc_ok": 17634,
     "md5": "d6478f5148ee71cb453d241f9562343a"
   },
   {
     "filename": "data.2.8.cf32",
-    "expected_crc_ok": 49137,
+    "expected_crc_ok": 49138,
     "reference_crc_ok": 44781,
     "md5": "6d131abe9060d1ed7b3aacdf19ce8f30"
   },
@@ -85,7 +85,7 @@
   },
   {
     "filename": "data.long.1.cf32",
-    "expected_crc_ok": 829018,
+    "expected_crc_ok": 828934,
     "reference_crc_ok": 814655,
     "md5": "689b2ebb9d7ef8a1544538ff231a0c58"
   }
