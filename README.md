@@ -48,6 +48,16 @@ Afterwards, tetra-rx can be launched on the FIFOs.
 $ tetra-rx /tmp/tetra.1.18.bits
 ```
 
+### Control
+
+The repository also contains a TUI for controlling the demodulator using its RPC interface.
+
+```
+$ kvakctl -s 127.0.0.1:6677 tui
+```
+
+![output](https://user-images.githubusercontent.com/3966931/35777606-45e60cfa-09b1-11e8-82e2-c17826ee8b67.gif)
+
 ## Building and installing
 
 ```
