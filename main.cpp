@@ -117,6 +117,7 @@ struct arguments {
 		chunk_size(1024),
 		bind("127.0.0.1:6677"),
 		loop(false),
+		force_single_file(false),
 		verbose(false),
 		muted(false)
 	{
@@ -124,6 +125,7 @@ struct arguments {
 
 	enum arg_ids {
 		LOOP = 1001,
+		SINGLE_FILE = 1002,
 	};
 
 	unsigned int nchannels;
@@ -133,6 +135,7 @@ struct arguments {
 	std::size_t chunk_size;
 	std::string bind;
 	bool loop;
+	bool force_single_file;
 	bool verbose;
 	bool muted;
 };
@@ -149,6 +152,8 @@ static struct argp_option argp_options[] = {
 	{ "bind",		'b',	"ADDR",			0,		"Bind to ADDR:PORT",	0 },
 	{ "loop",		 arguments::arg_ids::LOOP,
 		nullptr,		0,		"Loop the input file", 0 },
+	{ "force-single-file", arguments::arg_ids::SINGLE_FILE,
+		nullptr,		0,		"Force output to a single file for multiple channels", 0 },
 	{ "muted",		'm',	nullptr,		0,		"Start all channels muted", 0 },
 	{ "verbose",	'v',	nullptr,		0,		"Enable verbose debugging",	0 },
 	{ nullptr,		0,		nullptr,		0,		nullptr,				0 },
@@ -188,6 +193,9 @@ static error_t parse_opt(int key, char *arg_, struct argp_state *state)
 	case arguments::arg_ids::LOOP:
 		args->loop = true;
 		break;
+	case arguments::arg_ids::SINGLE_FILE:
+		args->force_single_file = true;
+		break;
 	case 'v':
 		args->verbose = true;
 		break;
@@ -201,7 +209,7 @@ static error_t parse_opt(int key, char *arg_, struct argp_state *state)
 		if (!args->output_path.has_filename()) {
 			FAIL("No output path specified");
 		}
-		if (args->nchannels > 1 &&
+		if (args->nchannels > 1 && !args->force_single_file &&
 				args->output_path.string().find("%d") == std::string::npos) {
 			FAIL("No channel number placeholder (%%d) specified in the output path string '%s'",
 				 args->output_path.c_str());
