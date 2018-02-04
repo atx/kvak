@@ -35,7 +35,7 @@ if (WITH_UBSAN)
 	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=undefined")
 endif ()
 if (WITH_OPENMP)
-	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp")
+	set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopenmp -DWITH_OPENMP")
 endif ()
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ggdb")

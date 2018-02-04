@@ -10,6 +10,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#ifdef WITH_OPENMP
+#include <omp.h>
+#endif
+
 #include "agc.hpp"
 #include "demodulator.hpp"
 #include "log.hpp"
@@ -286,6 +290,10 @@ int main(int argc, char *argv[])
 			kvak::server::server(args.bind, channels, server_mtx);
 		});
 	}
+
+#ifdef WITH_OPENMP
+	kvak::log::info << "Running with " << omp_get_max_threads() << " OpenMP threads";
+#endif
 
 	while (true) {
 		// Note that the input floats are read in _machine byte order_
