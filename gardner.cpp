@@ -46,6 +46,11 @@ void gardner::recover(std::complex<float> prev,
 	this->resampling_fraction -= err * integral_weight;
 	this->resampling_fraction = std::clamp(this->resampling_fraction, 0.8f, 1.2f);
 	this->timing_delta -= err * proportional_weight;
+	if (this->timing_delta < 0.0) {
+		// We can't very well walk back in time, so we force a one sample
+		// advance and hope that it will fix itself then ¯\_(ツ)_/¯
+		this->timing_delta = this->resampling_fraction;
+	}
 }
 
 
