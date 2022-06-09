@@ -4,6 +4,7 @@
 #include <functional>
 #include <string>
 #include <ostream>
+#include <optional>
 #include <string.h>
 
 namespace kvak::log {

@@ -3,6 +3,7 @@
 #include <experimental/filesystem>
 #include <iostream>
 #include <sstream>
+#include <array>
 
 #include "interpolator.hpp"
 
