@@ -1,6 +1,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <optional>
 
 #include "interpolator.hpp"
 #include "log.hpp"

@@ -2,6 +2,7 @@
 #pragma once
 
 #include <experimental/filesystem>
+#include <optional>
 
 #include "agc.hpp"
 #include "demodulator.hpp"
