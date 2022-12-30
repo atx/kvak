@@ -9,6 +9,7 @@
 #include <deque>
 #include <memory>
 #include <vector>
+#include <optional>
 
 #include "costas.hpp"
 #include "gardner.hpp"
