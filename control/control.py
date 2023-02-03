@@ -8,6 +8,9 @@ import capnp
 import math
 import pathlib
 import time
+import json
+import sys
+
 try:
     import urwid
 except ImportError:
@@ -36,6 +39,7 @@ def do_watch(service, args):
         for i, ch in enumerate(channels):
             info = ch.getInfo().wait().info
             print(json.dumps([ i, info.frequencyOffset, info.timingOffset, info.powerLevel ]))
+            sys.stdout.flush()
         # TODO: Compensate
         time.sleep(args.refresh_rate)
 
