@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <optional>
 #include <functional>
 #include <string>
 #include <ostream>
